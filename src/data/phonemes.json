@@ -1,0 +1,680 @@
+[
+  {
+    "id": "iy",
+    "ipa": "iː",
+    "arpabet": "IY",
+    "group": "monophthong",
+    "subgroup": "long",
+    "examples": [
+      "see",
+      "eat",
+      "sheep"
+    ],
+    "confusedWith": [
+      "ih"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ih",
+    "ipa": "ɪ",
+    "arpabet": "IH",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "sit",
+      "ship",
+      "fish"
+    ],
+    "confusedWith": [
+      "iy",
+      "eh"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "eh",
+    "ipa": "ɛ",
+    "arpabet": "EH",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "bed",
+      "red",
+      "ten"
+    ],
+    "confusedWith": [
+      "ae",
+      "ih",
+      "ey"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ae",
+    "ipa": "æ",
+    "arpabet": "AE",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "cat",
+      "bad",
+      "apple"
+    ],
+    "confusedWith": [
+      "eh",
+      "ah"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "aa",
+    "ipa": "ɑ",
+    "arpabet": "AA",
+    "group": "monophthong",
+    "subgroup": "long",
+    "examples": [
+      "hot",
+      "father",
+      "car"
+    ],
+    "confusedWith": [
+      "ah",
+      "ao"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ao",
+    "ipa": "ɔ",
+    "arpabet": "AO",
+    "group": "monophthong",
+    "subgroup": "long",
+    "examples": [
+      "law",
+      "thought",
+      "saw"
+    ],
+    "confusedWith": [
+      "aa",
+      "ow"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "uh",
+    "ipa": "ʊ",
+    "arpabet": "UH",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "book",
+      "good",
+      "put"
+    ],
+    "confusedWith": [
+      "uw"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "uw",
+    "ipa": "uː",
+    "arpabet": "UW",
+    "group": "monophthong",
+    "subgroup": "long",
+    "examples": [
+      "food",
+      "blue",
+      "moon"
+    ],
+    "confusedWith": [
+      "uh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ah",
+    "ipa": "ʌ",
+    "arpabet": "AH",
+    "stress": "stressed",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "cut",
+      "cup",
+      "love"
+    ],
+    "confusedWith": [
+      "ae",
+      "aa",
+      "schwa"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "schwa",
+    "ipa": "ə",
+    "arpabet": "AH",
+    "stress": "unstressed",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "about",
+      "sofa",
+      "banana"
+    ],
+    "confusedWith": [
+      "ah"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "er",
+    "ipa": "ɝ",
+    "arpabet": "ER",
+    "stress": "stressed",
+    "group": "monophthong",
+    "subgroup": "long",
+    "examples": [
+      "bird",
+      "word",
+      "nurse"
+    ],
+    "confusedWith": [
+      "er0"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "er0",
+    "ipa": "ɚ",
+    "arpabet": "ER",
+    "stress": "unstressed",
+    "group": "monophthong",
+    "subgroup": "short",
+    "examples": [
+      "teacher",
+      "water",
+      "doctor"
+    ],
+    "confusedWith": [
+      "er",
+      "schwa"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "ey",
+    "ipa": "eɪ",
+    "arpabet": "EY",
+    "group": "diphthong",
+    "examples": [
+      "day",
+      "name",
+      "rain"
+    ],
+    "confusedWith": [
+      "eh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ay",
+    "ipa": "aɪ",
+    "arpabet": "AY",
+    "group": "diphthong",
+    "examples": [
+      "my",
+      "time",
+      "five"
+    ],
+    "confusedWith": [
+      "oy"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "oy",
+    "ipa": "ɔɪ",
+    "arpabet": "OY",
+    "group": "diphthong",
+    "examples": [
+      "boy",
+      "coin",
+      "toy"
+    ],
+    "confusedWith": [
+      "ay"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "aw",
+    "ipa": "aʊ",
+    "arpabet": "AW",
+    "group": "diphthong",
+    "examples": [
+      "now",
+      "house",
+      "out"
+    ],
+    "confusedWith": [
+      "ow"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "ow",
+    "ipa": "oʊ",
+    "arpabet": "OW",
+    "group": "diphthong",
+    "examples": [
+      "go",
+      "home",
+      "boat"
+    ],
+    "confusedWith": [
+      "ao",
+      "aw"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "p",
+    "ipa": "p",
+    "arpabet": "P",
+    "group": "plosive",
+    "subgroup": "voiceless",
+    "examples": [
+      "pen",
+      "happy",
+      "cup"
+    ],
+    "confusedWith": [
+      "b"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "b",
+    "ipa": "b",
+    "arpabet": "B",
+    "group": "plosive",
+    "subgroup": "voiced",
+    "examples": [
+      "bad",
+      "baby",
+      "job"
+    ],
+    "confusedWith": [
+      "p",
+      "v"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "t",
+    "ipa": "t",
+    "arpabet": "T",
+    "group": "plosive",
+    "subgroup": "voiceless",
+    "examples": [
+      "top",
+      "cat",
+      "stop"
+    ],
+    "confusedWith": [
+      "d",
+      "th"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "d",
+    "ipa": "d",
+    "arpabet": "D",
+    "group": "plosive",
+    "subgroup": "voiced",
+    "examples": [
+      "dog",
+      "red",
+      "idea"
+    ],
+    "confusedWith": [
+      "t",
+      "dh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "k",
+    "ipa": "k",
+    "arpabet": "K",
+    "group": "plosive",
+    "subgroup": "voiceless",
+    "examples": [
+      "cat",
+      "key",
+      "back"
+    ],
+    "confusedWith": [
+      "g"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "g",
+    "ipa": "g",
+    "arpabet": "G",
+    "group": "plosive",
+    "subgroup": "voiced",
+    "examples": [
+      "go",
+      "big",
+      "egg"
+    ],
+    "confusedWith": [
+      "k"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ch",
+    "ipa": "tʃ",
+    "arpabet": "CH",
+    "group": "affricate",
+    "subgroup": "voiceless",
+    "examples": [
+      "chair",
+      "church",
+      "watch"
+    ],
+    "confusedWith": [
+      "sh",
+      "jh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "jh",
+    "ipa": "dʒ",
+    "arpabet": "JH",
+    "group": "affricate",
+    "subgroup": "voiced",
+    "examples": [
+      "job",
+      "judge",
+      "age"
+    ],
+    "confusedWith": [
+      "ch",
+      "zh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "m",
+    "ipa": "m",
+    "arpabet": "M",
+    "group": "nasal",
+    "subgroup": "voiced",
+    "examples": [
+      "man",
+      "home",
+      "summer"
+    ],
+    "confusedWith": [
+      "n"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "n",
+    "ipa": "n",
+    "arpabet": "N",
+    "group": "nasal",
+    "subgroup": "voiced",
+    "examples": [
+      "no",
+      "ten",
+      "dinner"
+    ],
+    "confusedWith": [
+      "m",
+      "ng"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "ng",
+    "ipa": "ŋ",
+    "arpabet": "NG",
+    "group": "nasal",
+    "subgroup": "voiced",
+    "examples": [
+      "sing",
+      "long",
+      "thinking"
+    ],
+    "confusedWith": [
+      "n"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "f",
+    "ipa": "f",
+    "arpabet": "F",
+    "group": "fricative",
+    "subgroup": "voiceless",
+    "examples": [
+      "fish",
+      "coffee",
+      "leaf"
+    ],
+    "confusedWith": [
+      "v",
+      "th"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "v",
+    "ipa": "v",
+    "arpabet": "V",
+    "group": "fricative",
+    "subgroup": "voiced",
+    "examples": [
+      "very",
+      "love",
+      "five"
+    ],
+    "confusedWith": [
+      "f",
+      "w",
+      "b"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "th",
+    "ipa": "θ",
+    "arpabet": "TH",
+    "group": "fricative",
+    "subgroup": "voiceless",
+    "examples": [
+      "think",
+      "three",
+      "bath"
+    ],
+    "confusedWith": [
+      "t",
+      "s",
+      "f"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "dh",
+    "ipa": "ð",
+    "arpabet": "DH",
+    "group": "fricative",
+    "subgroup": "voiced",
+    "examples": [
+      "this",
+      "mother",
+      "breathe"
+    ],
+    "confusedWith": [
+      "d",
+      "z"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "s",
+    "ipa": "s",
+    "arpabet": "S",
+    "group": "fricative",
+    "subgroup": "voiceless",
+    "examples": [
+      "see",
+      "bus",
+      "city"
+    ],
+    "confusedWith": [
+      "z",
+      "th",
+      "sh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "z",
+    "ipa": "z",
+    "arpabet": "Z",
+    "group": "fricative",
+    "subgroup": "voiced",
+    "examples": [
+      "zoo",
+      "busy",
+      "dogs"
+    ],
+    "confusedWith": [
+      "s",
+      "dh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "sh",
+    "ipa": "ʃ",
+    "arpabet": "SH",
+    "group": "fricative",
+    "subgroup": "voiceless",
+    "examples": [
+      "she",
+      "fish",
+      "nation"
+    ],
+    "confusedWith": [
+      "s",
+      "ch"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "zh",
+    "ipa": "ʒ",
+    "arpabet": "ZH",
+    "group": "fricative",
+    "subgroup": "voiced",
+    "examples": [
+      "measure",
+      "vision",
+      "beige"
+    ],
+    "confusedWith": [
+      "jh",
+      "sh"
+    ],
+    "notInTurkish": false
+  },
+  {
+    "id": "hh",
+    "ipa": "h",
+    "arpabet": "HH",
+    "group": "fricative",
+    "subgroup": "voiceless",
+    "examples": [
+      "hat",
+      "hello",
+      "behind"
+    ],
+    "confusedWith": [],
+    "notInTurkish": false
+  },
+  {
+    "id": "w",
+    "ipa": "w",
+    "arpabet": "W",
+    "group": "approximant",
+    "subgroup": "voiced",
+    "examples": [
+      "we",
+      "water",
+      "away"
+    ],
+    "confusedWith": [
+      "v"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "y",
+    "ipa": "j",
+    "arpabet": "Y",
+    "group": "approximant",
+    "subgroup": "voiced",
+    "examples": [
+      "yes",
+      "you",
+      "yellow"
+    ],
+    "confusedWith": [],
+    "notInTurkish": false
+  },
+  {
+    "id": "r",
+    "ipa": "r",
+    "arpabet": "R",
+    "group": "approximant",
+    "subgroup": "voiced",
+    "examples": [
+      "red",
+      "run",
+      "sorry"
+    ],
+    "confusedWith": [
+      "l"
+    ],
+    "notInTurkish": true
+  },
+  {
+    "id": "l",
+    "ipa": "l",
+    "arpabet": "L",
+    "group": "approximant",
+    "subgroup": "voiced",
+    "examples": [
+      "light",
+      "hello",
+      "ball"
+    ],
+    "confusedWith": [
+      "r"
+    ],
+    "notInTurkish": false
+  }
+]

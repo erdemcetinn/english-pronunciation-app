@@ -47,3 +47,6 @@ ADIMLAR.md
 AGENTS.md
 CLAUDE.md
 .claude/
+
+# raw downloads (CMU dict etc.)
+data/raw/
