@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/ui": "~58.0.28",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.25",
     "expo-constants": "~58.0.16",
     "expo-device": "~58.0.5",
@@ -40,7 +41,7 @@
     "lint": "expo lint",
     "verify:phonemes": "node scripts/verify-phonemes.mjs",
     "build:words": "node scripts/build-practice-words.mjs",
-    "test:scripts": "node --test scripts/lib/"
+    "test": "node --test scripts/lib/ src/lib/*.test.ts"
   },
   "private": true
 }

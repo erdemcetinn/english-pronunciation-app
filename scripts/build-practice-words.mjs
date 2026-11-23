@@ -1,4 +1,4 @@
-// Builds src/data/words.json: practice words per phoneme + IPA for every word used.
+// Builds src/data/words.json: practice word pool per phoneme (most frequent first) + IPA for every word used.
 // Usage: node scripts/build-practice-words.mjs
 // Inputs (data/raw, gitignored):
 //   cmudict.dict                 https://github.com/cmusphinx/cmudict
@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 import { loadCmu, matchesForPractice, toIpaSegments } from './lib/arpabet.mjs';
 
-const WORDS_PER_PHONEME = 20;
+const POOL_SIZE = 150;
 const MIN_WORD_LENGTH = 2;
 const root = (path) => new URL(`../${path}`, import.meta.url);
 
@@ -24,7 +24,7 @@ function loadFrequentWords() {
 function pickWords(phoneme, frequent, cmu) {
   const picked = [...phoneme.examples];
   for (const word of frequent) {
-    if (picked.length >= WORDS_PER_PHONEME) break;
+    if (picked.length >= POOL_SIZE) break;
     const phones = cmu.get(word);
     if (!phones || picked.includes(word)) continue;
     if (phones.some((ph) => matchesForPractice(ph, phoneme))) picked.push(word);
@@ -40,7 +40,7 @@ const practice = Object.fromEntries(phonemes.map((p) => [p.id, pickWords(p, freq
 const allWords = [...new Set(Object.values(practice).flat())].sort();
 const ipa = Object.fromEntries(allWords.map((w) => [w, toIpaSegments(cmu.get(w))]));
 
-const short = Object.entries(practice).filter(([, words]) => words.length < WORDS_PER_PHONEME);
+const short = Object.entries(practice).filter(([, words]) => words.length < POOL_SIZE);
 if (short.length > 0) console.warn('Fewer words than wanted:', short.map(([id, w]) => `${id}=${w.length}`).join(', '));
 
 writeFileSync(root('src/data/words.json'), JSON.stringify({ practice, ipa }) + '\n');

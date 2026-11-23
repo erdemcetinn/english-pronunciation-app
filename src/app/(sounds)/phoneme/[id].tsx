@@ -5,7 +5,10 @@ import { IpaText } from '@/components/ipa-text';
 import { GROUP_LABELS } from '@/constants/groups';
 import { Radius, Spacing } from '@/constants/theme';
 import { getPhonemeById } from '@/data/phonemes';
+import { getPracticeWords } from '@/data/words';
+import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
+import type { SeenMap } from '@/lib/practice-session';
 import { speakWord } from '@/lib/speech';
 
 export default function PhonemeDetailScreen() {
@@ -13,6 +16,7 @@ export default function PhonemeDetailScreen() {
   const colors = useTheme();
   const router = useRouter();
   const phoneme = getPhonemeById(id);
+  const { seen } = useSeenWords(id);
 
   if (!phoneme) {
     return (
@@ -46,6 +50,11 @@ export default function PhonemeDetailScreen() {
         style={({ pressed }) => [styles.practice, { backgroundColor: colors.accent, opacity: pressed ? 0.8 : 1 }]}>
         <Text style={styles.practiceText}>Practice this sound</Text>
       </Pressable>
+      {seen && (
+        <Text style={[styles.seenCount, { color: colors.textSecondary }]}>
+          {countSeen(seen, getPracticeWords(phoneme.id))} / {getPracticeWords(phoneme.id).length} words seen
+        </Text>
+      )}
 
       <Text style={[styles.heading, { color: colors.text }]}>Examples</Text>
       {phoneme.examples.map((word) => (
@@ -90,6 +99,10 @@ export default function PhonemeDetailScreen() {
   );
 }
 
+function countSeen(seen: SeenMap, pool: readonly string[]): number {
+  return pool.filter((word) => word in seen).length;
+}
+
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: Spacing.md, gap: Spacing.sm },
@@ -115,6 +128,7 @@ const styles = StyleSheet.create({
   word: { fontSize: 20 },
   rowIpa: { fontSize: 16, marginTop: 2 },
   practice: { paddingVertical: Spacing.md, borderRadius: Radius.lg, alignItems: 'center' },
+  seenCount: { textAlign: 'center', fontSize: 13 },
   practiceText: { color: '#FFFFFF', fontSize: 17, fontWeight: '600' },
   play: { fontSize: 18 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
