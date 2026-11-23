@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Radius, Spacing } from '@/constants/theme';
@@ -9,10 +9,11 @@ const TILE_SIZE = 76;
 
 export function PhonemeTile({ phoneme }: { phoneme: Phoneme }) {
   const colors = useTheme();
+  const router = useRouter();
 
   return (
-    <Link href={{ pathname: '/phoneme/[id]', params: { id: phoneme.id } }} asChild>
       <Pressable
+        onPress={() => router.push({ pathname: '/phoneme/[id]', params: { id: phoneme.id } })}
         accessibilityLabel={`Sound ${phoneme.ipa}, as in ${phoneme.examples[0]}`}
         style={({ pressed }) => [
           styles.tile,
@@ -26,7 +27,6 @@ export function PhonemeTile({ phoneme }: { phoneme: Phoneme }) {
           {phoneme.examples[0]}
         </Text>
       </Pressable>
-    </Link>
   );
 }
 

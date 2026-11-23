@@ -1,4 +1,4 @@
-import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { GROUP_LABELS } from '@/constants/groups';
@@ -10,6 +10,7 @@ import { speakWord } from '@/lib/speech';
 export default function PhonemeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useTheme();
+  const router = useRouter();
   const phoneme = getPhonemeById(id);
 
   if (!phoneme) {
@@ -62,13 +63,14 @@ export default function PhonemeDetailScreen() {
               const other = getPhonemeById(otherId);
               if (!other) return null;
               return (
-                <Link key={otherId} href={{ pathname: '/phoneme/[id]', params: { id: otherId } }} asChild>
-                  <Pressable style={[styles.chip, { backgroundColor: colors.tile }]}>
-                    <Text style={[styles.chipText, { color: colors.text }]}>
-                      {other.ipa} <Text style={{ color: colors.textSecondary }}>{other.examples[0]}</Text>
-                    </Text>
-                  </Pressable>
-                </Link>
+                <Pressable
+                  key={otherId}
+                  onPress={() => router.push({ pathname: '/phoneme/[id]', params: { id: otherId } })}
+                  style={[styles.chip, { backgroundColor: colors.tile }]}>
+                  <Text style={[styles.chipText, { color: colors.text }]}>
+                    {other.ipa} <Text style={{ color: colors.textSecondary }}>{other.examples[0]}</Text>
+                  </Text>
+                </Pressable>
               );
             })}
           </View>
