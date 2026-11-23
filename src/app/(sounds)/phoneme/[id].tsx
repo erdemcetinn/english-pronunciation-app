@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { IpaText } from '@/components/ipa-text';
 import { GROUP_LABELS } from '@/constants/groups';
 import { Radius, Spacing } from '@/constants/theme';
 import { getPhonemeById } from '@/data/phonemes';
@@ -40,6 +41,12 @@ export default function PhonemeDetailScreen() {
         )}
       </View>
 
+      <Pressable
+        onPress={() => router.push({ pathname: '/practice/[id]', params: { id: phoneme.id } })}
+        style={({ pressed }) => [styles.practice, { backgroundColor: colors.accent, opacity: pressed ? 0.8 : 1 }]}>
+        <Text style={styles.practiceText}>Practice this sound</Text>
+      </Pressable>
+
       <Text style={[styles.heading, { color: colors.text }]}>Examples</Text>
       {phoneme.examples.map((word) => (
         <Pressable
@@ -50,7 +57,10 @@ export default function PhonemeDetailScreen() {
             styles.row,
             { backgroundColor: pressed ? colors.tilePressed : colors.tile },
           ]}>
-          <Text style={[styles.word, { color: colors.text }]}>{word}</Text>
+          <View>
+            <Text style={[styles.word, { color: colors.text }]}>{word}</Text>
+            <IpaText word={word} highlight={phoneme.ipa} style={styles.rowIpa} />
+          </View>
           <Text style={[styles.play, { color: colors.accent }]}>▶︎</Text>
         </Pressable>
       ))}
@@ -103,6 +113,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
   },
   word: { fontSize: 20 },
+  rowIpa: { fontSize: 16, marginTop: 2 },
+  practice: { paddingVertical: Spacing.md, borderRadius: Radius.lg, alignItems: 'center' },
+  practiceText: { color: '#FFFFFF', fontSize: 17, fontWeight: '600' },
   play: { fontSize: 18 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   chip: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: Radius.lg },

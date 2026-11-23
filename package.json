@@ -38,7 +38,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "verify:phonemes": "node scripts/verify-phonemes.mjs"
+    "verify:phonemes": "node scripts/verify-phonemes.mjs",
+    "build:words": "node scripts/build-practice-words.mjs",
+    "test:scripts": "node --test scripts/lib/"
   },
   "private": true
 }
