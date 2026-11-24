@@ -11,10 +11,12 @@ import { Radius, Spacing } from '@/constants/theme';
 import { getPhonemeById, PHONEMES } from '@/data/phonemes';
 import { GAME_VOWEL_IDS, VOWEL_DISTRACTORS } from '@/data/vowel-distractors';
 import { getIpaSegments, getPracticeWords } from '@/data/words';
+import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { playWord, prefetchWords } from '@/lib/play-word';
-import { shuffled } from '@/lib/practice-session';
+import { pickFresh } from '@/lib/pick-fresh';
+import { shuffled, type SeenMap } from '@/lib/practice-session';
 import { nextVowelRound, type VowelRound } from '@/lib/vowel-game';
 
 const GAME_VOWELS = PHONEMES.filter((p) => GAME_VOWEL_IDS.includes(p.id));
@@ -23,7 +25,10 @@ const VOWEL_SYMBOLS = new Set(
   PHONEMES.filter((p) => p.group === 'monophthong' || p.group === 'diphthong').map((p) => p.ipa),
 );
 
-const newRound = (): VowelRound | null =>
+const SEEN_LIST_ID = 'game-vowel';
+
+/** Next round, preferring words the player hasn't seen yet. */
+const newRound = (seen: SeenMap): VowelRound | null =>
   nextVowelRound({
     vowels: GAME_VOWELS,
     distractors: VOWEL_DISTRACTORS,
@@ -32,6 +37,7 @@ const newRound = (): VowelRound | null =>
     segmentsFor: getIpaSegments,
     vowelSymbols: VOWEL_SYMBOLS,
     random: Math.random,
+    pickWord: (words) => pickFresh(words, seen, Math.random),
   });
 
 function optionState(id: string, round: VowelRound, answer: string | null): OptionState {
@@ -42,19 +48,35 @@ function optionState(id: string, round: VowelRound, answer: string | null): Opti
 
 export default function FindTheVowelScreen() {
   const colors = useTheme();
-  const [round, setRound] = useState(newRound);
-  const [upcoming, setUpcoming] = useState(newRound);
+  const { seen, markSeen } = useSeenWords(SEEN_LIST_ID);
+  const [round, setRound] = useState<VowelRound | null>(null);
+  const [upcoming, setUpcoming] = useState<VowelRound | null>(null);
   const [answer, setAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
   const [isWordHidden, setIsWordHidden] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+
+  // Start once the seen history has loaded, so the first rounds are fresh too.
+  useEffect(() => {
+    if (!seen || isStarted) return;
+    const first = newRound(seen);
+    setRound(first);
+    // Treat the current word as seen so the upcoming round can't repeat it.
+    setUpcoming(newRound(first ? { ...seen, [first.word]: Date.now() } : seen));
+    setIsStarted(true);
+  }, [seen, isStarted]);
 
   useEffect(() => {
-    if (round) void playWord(round.word, GAME_VOICES);
-  }, [round]);
+    if (!round) return;
+    void playWord(round.word, GAME_VOICES);
+    markSeen(round.word);
+  }, [round, markSeen]);
 
   useEffect(() => {
     if (upcoming) prefetchWords([upcoming.word], GAME_VOICES);
   }, [upcoming]);
+
+  if (!isStarted) return <View style={[styles.center, { backgroundColor: colors.background }]} />;
 
   if (!round) {
     return (
@@ -80,7 +102,7 @@ export default function FindTheVowelScreen() {
 
   const goNext = () => {
     setRound(upcoming);
-    setUpcoming(newRound());
+    setUpcoming(newRound(upcoming ? { ...seen, [upcoming.word]: Date.now() } : (seen ?? {})));
     setAnswer(null);
   };
 

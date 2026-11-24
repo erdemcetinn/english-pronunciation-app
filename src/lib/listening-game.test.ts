@@ -29,3 +29,8 @@ test('correct answer raises score and streak, wrong one resets streak', () => {
   const afterWrong = scoreAnswer(afterRight, false);
   assert.deepEqual(afterWrong, { correct: 1, total: 2, streak: 0, bestStreak: 1 });
 });
+
+test('uses the key picker to choose the pair', () => {
+  const round = nextRound(PAIRS, null, Math.random, () => 'van|fan');
+  assert.equal(round.pair.a, 'van');
+});

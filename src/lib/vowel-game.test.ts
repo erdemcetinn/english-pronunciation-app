@@ -42,3 +42,18 @@ test('round targets the chosen vowel and skips words where it is not stressed', 
     options: ['iy', 'ih', 'ey'],
   });
 });
+
+test('uses the word picker when given', () => {
+  const words: Record<string, string[]> = { see: ['s', 'i'], eat: ['i', 't'] };
+  const round = nextVowelRound({
+    vowels: [{ id: 'iy', ipa: 'i' }],
+    distractors: { iy: ['ih', 'ey'] },
+    shuffle: (ids) => [...ids],
+    wordsFor: () => ['see', 'eat'],
+    segmentsFor: (w) => words[w],
+    vowelSymbols: VOWELS,
+    random: () => 0,
+    pickWord: () => 'eat',
+  });
+  assert.equal(round?.word, 'eat');
+});

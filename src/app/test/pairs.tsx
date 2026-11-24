@@ -8,11 +8,18 @@ import { GAME_VOICES, SUCCESS_COLOR } from '@/constants/game';
 import { Radius, Spacing } from '@/constants/theme';
 import { MINIMAL_PAIRS } from '@/data/minimal-pairs';
 import { getPhonemeById } from '@/data/phonemes';
+import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
-import { INITIAL_SCORE, nextRound, scoreAnswer, type Round } from '@/lib/listening-game';
+import { INITIAL_SCORE, nextRound, pairKey, scoreAnswer, type Round } from '@/lib/listening-game';
+import { pickFresh } from '@/lib/pick-fresh';
+import type { SeenMap } from '@/lib/practice-session';
 import { playWord, prefetchWords } from '@/lib/play-word';
 
-const newRound = (previous: Round | null) => nextRound(MINIMAL_PAIRS, previous?.pair ?? null, Math.random);
+const SEEN_LIST_ID = 'game-pairs';
+
+/** Next round, preferring pairs the player hasn't seen yet. */
+const newRound = (previous: Round | null, seen: SeenMap) =>
+  nextRound(MINIMAL_PAIRS, previous?.pair ?? null, Math.random, (keys) => pickFresh(keys, seen, Math.random));
 
 function contrastLabel(round: Round): string {
   const [a, b] = round.pair.contrast.map((id) => getPhonemeById(id)?.ipa ?? id);
@@ -27,18 +34,31 @@ function optionState(word: string, round: Round, answer: string | null): OptionS
 
 export default function WordPairsScreen() {
   const colors = useTheme();
-  const [round, setRound] = useState<Round>(() => newRound(null));
-  const [upcoming, setUpcoming] = useState<Round>(() => newRound(round));
+  const { seen, markSeen } = useSeenWords(SEEN_LIST_ID);
+  const [round, setRound] = useState<Round | null>(null);
+  const [upcoming, setUpcoming] = useState<Round | null>(null);
   const [answer, setAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
 
+  // Start once the seen history has loaded, so the first rounds are fresh too.
   useEffect(() => {
-    void playWord(round.target, GAME_VOICES);
-  }, [round]);
+    if (!seen || round) return;
+    const first = newRound(null, seen);
+    setRound(first);
+    setUpcoming(newRound(first, seen));
+  }, [seen, round]);
 
   useEffect(() => {
-    prefetchWords([upcoming.target], GAME_VOICES);
+    if (!round) return;
+    void playWord(round.target, GAME_VOICES);
+    markSeen(pairKey(round.pair));
+  }, [round, markSeen]);
+
+  useEffect(() => {
+    if (upcoming) prefetchWords([upcoming.target], GAME_VOICES);
   }, [upcoming]);
+
+  if (!round || !upcoming) return <View style={[styles.center, { backgroundColor: colors.background }]} />;
 
   const choose = (word: string) => {
     if (answer) return void playWord(word, GAME_VOICES);
@@ -48,7 +68,7 @@ export default function WordPairsScreen() {
 
   const goNext = () => {
     setRound(upcoming);
-    setUpcoming(newRound(upcoming));
+    setUpcoming(newRound(upcoming, seen ?? {}));
     setAnswer(null);
   };
 
@@ -90,6 +110,7 @@ export default function WordPairsScreen() {
 }
 
 const styles = StyleSheet.create({
+  center: { flex: 1 },
   container: { padding: Spacing.lg, gap: Spacing.lg },
   contrast: { textAlign: 'center', fontSize: 16 },
   question: { textAlign: 'center', fontSize: 18, fontWeight: '600' },

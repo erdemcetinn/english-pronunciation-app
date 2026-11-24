@@ -25,13 +25,15 @@ interface RoundSource {
   segmentsFor: (word: string) => readonly string[];
   vowelSymbols: ReadonlySet<string>;
   random: () => number;
+  /** Chooses the word, e.g. preferring unseen ones; default is uniform random. */
+  pickWord?: (words: readonly string[]) => string | null;
 }
 
 const MAX_TRIES = 20;
 
 /** Picks a vowel uniformly, then a word whose primary-stressed vowel is that vowel, plus 3 options. */
 export function nextVowelRound(source: RoundSource): VowelRound | null {
-  const { vowels, distractors, shuffle, wordsFor, segmentsFor, vowelSymbols, random } = source;
+  const { vowels, distractors, shuffle, wordsFor, segmentsFor, vowelSymbols, random, pickWord } = source;
   for (let attempt = 0; attempt < MAX_TRIES; attempt += 1) {
     const vowel = vowels[Math.floor(random() * vowels.length)];
     const candidates = wordsFor(vowel.id).filter((word) => {
@@ -39,7 +41,7 @@ export function nextVowelRound(source: RoundSource): VowelRound | null {
       return segments[stressedVowelIndex(segments, vowelSymbols)] === vowel.ipa;
     });
     if (candidates.length === 0) continue;
-    const word = candidates[Math.floor(random() * candidates.length)];
+    const word = pickWord?.(candidates) ?? candidates[Math.floor(random() * candidates.length)];
     const segments = segmentsFor(word);
     return {
       word,

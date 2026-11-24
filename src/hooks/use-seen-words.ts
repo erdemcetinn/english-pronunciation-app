@@ -4,15 +4,15 @@ import { useCallback, useRef, useState } from 'react';
 import type { SeenMap } from '@/lib/practice-session';
 import { loadSeen, saveSeen } from '@/lib/seen-store';
 
-/** Seen-word history for one phoneme, reloaded whenever the screen gains focus. */
-export function useSeenWords(phonemeId: string) {
+/** Seen-item history for one list (a phoneme, or a game), reloaded whenever the screen gains focus. */
+export function useSeenWords(listId: string) {
   const [seen, setSeen] = useState<SeenMap | null>(null);
   const latest = useRef<SeenMap>({});
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
-      loadSeen(phonemeId).then((loaded) => {
+      loadSeen(listId).then((loaded) => {
         if (!isActive) return;
         latest.current = loaded;
         setSeen(loaded);
@@ -20,7 +20,7 @@ export function useSeenWords(phonemeId: string) {
       return () => {
         isActive = false;
       };
-    }, [phonemeId]),
+    }, [listId]),
   );
 
   const markSeen = useCallback(
@@ -28,9 +28,9 @@ export function useSeenWords(phonemeId: string) {
       const next = { ...latest.current, [word]: Date.now() };
       latest.current = next;
       setSeen(next);
-      void saveSeen(phonemeId, next);
+      void saveSeen(listId, next);
     },
-    [phonemeId],
+    [listId],
   );
 
   return { seen, markSeen };
