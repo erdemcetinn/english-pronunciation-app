@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { IpaText } from '@/components/ipa-text';
+import { SUCCESS_COLOR } from '@/constants/game';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -13,13 +14,11 @@ interface AnswerOptionProps {
   onPress: () => void;
 }
 
-const SUCCESS = '#30A46C';
-
 /** One of the two choices; after answering it shows the IPA and turns green/red. */
 export function AnswerOption({ word, state, onPress }: AnswerOptionProps) {
   const colors = useTheme();
   const isAnswered = state !== 'idle';
-  const borderColor = state === 'correct' ? SUCCESS : state === 'wrong' ? colors.warning : 'transparent';
+  const borderColor = state === 'correct' ? SUCCESS_COLOR : state === 'wrong' ? colors.warning : 'transparent';
 
   return (
     <Pressable

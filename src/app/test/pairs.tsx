@@ -2,16 +2,15 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { AnswerOption, type OptionState } from '@/components/answer-option';
+import { ListenButton } from '@/components/listen-button';
+import { ScoreHeader } from '@/components/score-header';
+import { GAME_VOICES, SUCCESS_COLOR } from '@/constants/game';
 import { Radius, Spacing } from '@/constants/theme';
 import { MINIMAL_PAIRS } from '@/data/minimal-pairs';
 import { getPhonemeById } from '@/data/phonemes';
 import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_SCORE, nextRound, scoreAnswer, type Round } from '@/lib/listening-game';
 import { playWord, prefetchWords } from '@/lib/play-word';
-import type { VoiceMode } from '@/lib/voice-settings';
-
-// The game always rotates through all Polly speakers: hearing many voices trains the ear faster.
-const GAME_VOICES: VoiceMode = { kind: 'random' };
 
 const newRound = (previous: Round | null) => nextRound(MINIMAL_PAIRS, previous?.pair ?? null, Math.random);
 
@@ -26,7 +25,7 @@ function optionState(word: string, round: Round, answer: string | null): OptionS
   return word === answer ? 'wrong' : 'neutral';
 }
 
-export default function TestScreen() {
+export default function WordPairsScreen() {
   const colors = useTheme();
   const [round, setRound] = useState<Round>(() => newRound(null));
   const [upcoming, setUpcoming] = useState<Round>(() => newRound(round));
@@ -60,24 +59,11 @@ export default function TestScreen() {
       contentInsetAdjustmentBehavior="automatic"
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.container}>
-      <View style={styles.scoreRow}>
-        <Text style={[styles.score, { color: colors.text }]}>
-          {score.correct} / {score.total}
-        </Text>
-        <Text style={[styles.streak, { color: colors.textSecondary }]}>
-          Streak {score.streak} · Best {score.bestStreak}
-        </Text>
-      </View>
+      <ScoreHeader score={score} />
 
       <Text style={[styles.contrast, { color: colors.textSecondary }]}>{contrastLabel(round)}</Text>
 
-      <Pressable
-        onPress={() => void playWord(round.target, GAME_VOICES)}
-        accessibilityLabel="Play the word again"
-        style={({ pressed }) => [styles.listen, { backgroundColor: colors.accent, opacity: pressed ? 0.8 : 1 }]}>
-        <Text style={styles.listenIcon}>▶︎</Text>
-        <Text style={styles.listenText}>Listen again</Text>
-      </Pressable>
+      <ListenButton onPress={() => void playWord(round.target, GAME_VOICES)} />
 
       <Text style={[styles.question, { color: colors.text }]}>Which word did you hear?</Text>
 
@@ -89,7 +75,7 @@ export default function TestScreen() {
 
       {answer && (
         <>
-          <Text style={[styles.feedback, { color: isCorrect ? '#30A46C' : colors.warning }]}>
+          <Text style={[styles.feedback, { color: isCorrect ? SUCCESS_COLOR : colors.warning }]}>
             {isCorrect ? 'Correct!' : `It was "${round.target}"`}
           </Text>
           <Pressable
@@ -105,21 +91,7 @@ export default function TestScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: Spacing.lg, gap: Spacing.lg },
-  scoreRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  score: { fontSize: 28, fontWeight: '700' },
-  streak: { fontSize: 14 },
   contrast: { textAlign: 'center', fontSize: 16 },
-  listen: {
-    alignSelf: 'center',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-  },
-  listenIcon: { color: '#FFFFFF', fontSize: 40 },
-  listenText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
   question: { textAlign: 'center', fontSize: 18, fontWeight: '600' },
   options: { flexDirection: 'row', gap: Spacing.md },
   feedback: { textAlign: 'center', fontSize: 20, fontWeight: '700' },
