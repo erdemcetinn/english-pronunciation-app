@@ -4,13 +4,14 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { IpaText } from '@/components/ipa-text';
 import { ToggleChip } from '@/components/toggle-chip';
+import { VoiceChip } from '@/components/voice-chip';
 import { Radius, Spacing } from '@/constants/theme';
 import { getPhonemeById } from '@/data/phonemes';
 import { getPracticeWords } from '@/data/words';
 import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
 import { buildSession } from '@/lib/practice-session';
-import { speakWord } from '@/lib/speech';
+import { playWord, prefetchWords } from '@/lib/play-word';
 
 export default function PracticeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -32,10 +33,15 @@ export default function PracticeScreen() {
 
   useEffect(() => {
     if (!word) return;
-    speakWord(word);
+    void playWord(word);
     markSeen(word);
     setIsRevealed(false);
   }, [word, markSeen]);
+
+  // Download the next two words in the background so "Next" plays instantly.
+  useEffect(() => {
+    if (session) prefetchWords(session.slice(index + 1, index + 3));
+  }, [session, index]);
 
   if (!phoneme) return <Message text="Sound not found." />;
   if (!session) return <Message loading />;
@@ -62,13 +68,14 @@ export default function PracticeScreen() {
           {index + 1} / {session.length}
         </Text>
         <View style={styles.toggles}>
+          <VoiceChip />
           <ToggleChip label="Hide word" isOn={isWordHidden} onToggle={() => setIsWordHidden(!isWordHidden)} />
           <ToggleChip label="Hide IPA" isOn={isIpaHidden} onToggle={() => setIsIpaHidden(!isIpaHidden)} />
         </View>
       </View>
 
       <Pressable
-        onPress={() => speakWord(word)}
+        onPress={() => void playWord(word)}
         accessibilityLabel={`Play ${word} again`}
         style={({ pressed }) => [
           styles.card,

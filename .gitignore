@@ -50,3 +50,9 @@ CLAUDE.md
 
 # raw downloads (CMU dict etc.)
 data/raw/
+
+# terraform
+infra/.terraform/
+infra/*.tfstate*
+infra/*.tfvars
+.env

@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { IpaText } from '@/components/ipa-text';
+import { VoiceChip } from '@/components/voice-chip';
 import { GROUP_LABELS } from '@/constants/groups';
 import { Radius, Spacing } from '@/constants/theme';
 import { getPhonemeById } from '@/data/phonemes';
@@ -9,7 +10,7 @@ import { getPracticeWords } from '@/data/words';
 import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
 import type { SeenMap } from '@/lib/practice-session';
-import { speakWord } from '@/lib/speech';
+import { playWord } from '@/lib/play-word';
 
 export default function PhonemeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -56,11 +57,14 @@ export default function PhonemeDetailScreen() {
         </Text>
       )}
 
-      <Text style={[styles.heading, { color: colors.text }]}>Examples</Text>
+      <View style={styles.examplesHeader}>
+        <Text style={[styles.heading, { color: colors.text }]}>Examples</Text>
+        <VoiceChip />
+      </View>
       {phoneme.examples.map((word) => (
         <Pressable
           key={word}
-          onPress={() => speakWord(word)}
+          onPress={() => void playWord(word)}
           accessibilityLabel={`Play ${word}`}
           style={({ pressed }) => [
             styles.row,
@@ -76,7 +80,7 @@ export default function PhonemeDetailScreen() {
 
       {phoneme.confusedWith.length > 0 && (
         <>
-          <Text style={[styles.heading, { color: colors.text }]}>Often confused with</Text>
+          <Text style={[styles.heading, styles.spaced, { color: colors.text }]}>Often confused with</Text>
           <View style={styles.chips}>
             {phoneme.confusedWith.map((otherId) => {
               const other = getPhonemeById(otherId);
@@ -117,7 +121,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
   },
-  heading: { fontSize: 18, fontWeight: '700', marginTop: Spacing.md },
+  heading: { fontSize: 18, fontWeight: '700' },
+  spaced: { marginTop: Spacing.md },
+  examplesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: Spacing.md,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -1,5 +1,10 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
+import { loadVoiceMode } from '@/lib/voice-settings';
+
+// Restore the saved voice choice before any screen plays audio.
+void loadVoiceMode();
+
 export default function RootLayout() {
   return (
     <NativeTabs>
