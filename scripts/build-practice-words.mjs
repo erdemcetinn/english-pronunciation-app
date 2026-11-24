@@ -7,7 +7,7 @@
 // Minimal pairs also require the word to be in /usr/share/dict/words (filters names).
 import { readFileSync, writeFileSync } from 'node:fs';
 
-import { loadCmu, matchesForPractice, toIpaSegments } from './lib/arpabet.mjs';
+import { loadCmu, loadOverrides, matchesForPractice, toIpaSegments } from './lib/arpabet.mjs';
 import { findMinimalPairs } from './lib/minimal-pairs.mjs';
 
 const POOL_SIZE = 150;
@@ -38,7 +38,8 @@ function pickWords(phoneme, frequent, cmu) {
 }
 
 const phonemes = JSON.parse(readFileSync(root('src/data/phonemes.json'), 'utf8'));
-const cmu = loadCmu(root('data/raw/cmudict.dict'));
+// Preferred readings (read = /rid/, not /rɛd/) replace the CMU entry.
+const cmu = new Map([...loadCmu(root('data/raw/cmudict.dict')), ...loadOverrides(root('scripts/pronunciation-overrides.txt'))]);
 const frequent = loadFrequentWords();
 
 const practice = Object.fromEntries(phonemes.map((p) => [p.id, pickWords(p, frequent, cmu)]));

@@ -1,0 +1,15 @@
+# Preferred pronunciation for words whose CMU first entry is the less common reading.
+# Format: word ARPABET...   (used instead of the CMU dictionary entry)
+read R IY1 D
+lead L IY1 D
+live L IH1 V
+close K L OW1 Z
+use Y UW1 Z
+wind W IH1 N D
+record R EH1 K ER0 D
+records R EH1 K ER0 D Z
+wound W UW1 N D
+subject S AH1 B JH IH0 K T
+perfect P ER1 F IH2 K T
+update AH1 P D EY2 T
+survey S ER1 V EY2

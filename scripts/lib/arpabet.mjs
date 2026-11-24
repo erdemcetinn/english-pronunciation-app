@@ -68,6 +68,16 @@ export function toIpaSegments(phones) {
   );
 }
 
+/** Loads "word PHONES..." override lines (comments with #). */
+export function loadOverrides(path) {
+  const overrides = new Map();
+  for (const line of readFileSync(path, 'utf8').split('\n')) {
+    const [word, ...phones] = line.split('#')[0].trim().split(/\s+/);
+    if (word && phones.length > 0) overrides.set(word, phones);
+  }
+  return overrides;
+}
+
 /** Loads CMU dict as Map<word, phones[]>, keeping the first pronunciation only. */
 export function loadCmu(path) {
   const entries = new Map();

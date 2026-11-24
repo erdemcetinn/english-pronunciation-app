@@ -1,5 +1,7 @@
 import { Directory, File, Paths } from 'expo-file-system';
 
+import { getIpaSegments } from '@/data/words';
+
 const BASE_URL = process.env.EXPO_PUBLIC_AUDIO_BASE_URL;
 const KEY_PREFIX = 'audio/v1';
 const CACHE_DIR_NAME = 'audio-v1';
@@ -8,8 +10,15 @@ const inFlight = new Map<string, Promise<string>>();
 
 export const isRemoteAudioConfigured = Boolean(BASE_URL);
 
+/** Short hash of the word's IPA: if a pronunciation is fixed, the old cached file is ignored. */
+function ipaFingerprint(word: string): string {
+  let hash = 5381;
+  for (const char of getIpaSegments(word).join('')) hash = ((hash * 33) ^ char.charCodeAt(0)) >>> 0;
+  return hash.toString(36);
+}
+
 function localFile(voice: string, word: string): File {
-  return new File(Paths.cache, CACHE_DIR_NAME, voice, `${word}.mp3`);
+  return new File(Paths.cache, CACHE_DIR_NAME, voice, `${word}.${ipaFingerprint(word)}.mp3`);
 }
 
 async function download(voice: string, word: string): Promise<string> {

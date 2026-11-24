@@ -3,7 +3,8 @@
 // Already uploaded files are skipped, so the script is safe to re-run.
 //
 // Usage:
-//   node scripts/generate-audio.mjs --bucket <name> [--voices Joanna,Matthew] [--words read,live] [--dry-run]
+//   node scripts/generate-audio.mjs --bucket <name> [--voices Joanna,Matthew] [--words read,live] [--overwrite] [--dry-run]
+//   --overwrite regenerates the given --words even if they exist (after a pronunciation fix).
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { readFileSync } from 'node:fs';
@@ -29,11 +30,13 @@ function parseOptions() {
       voices: { type: 'string' },
       words: { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
+      overwrite: { type: 'boolean', default: false },
     },
   });
   if (!values.bucket) throw new Error('Missing --bucket (see `terraform output audio_bucket`)');
+  if (values.overwrite && !values.words) throw new Error('--overwrite needs --words (never overwrite everything by accident)');
   const split = (list) => (list ? list.split(',').map((s) => s.trim()).filter(Boolean) : null);
-  return { bucket: values.bucket, voices: split(values.voices), words: split(values.words), isDryRun: values['dry-run'] };
+  return { bucket: values.bucket, voices: split(values.voices), words: split(values.words), isDryRun: values['dry-run'], isOverwrite: values.overwrite };
 }
 
 async function listExistingKeys(s3, bucket, voice) {
@@ -108,7 +111,7 @@ async function main() {
 
   const jobs = [];
   for (const voice of voices) {
-    const existing = await listExistingKeys(s3, options.bucket, voice);
+    const existing = options.isOverwrite ? new Set() : await listExistingKeys(s3, options.bucket, voice);
     for (const word of words) {
       if (!existing.has(audioKey(voice, word))) jobs.push({ voice, word, segments: ipa[word] });
     }
