@@ -1,71 +1,105 @@
 # English Pronunciation App
 
-A mobile app for learning to **hear and produce every sound of American English**, built for adult learners who already know the language but still struggle with sounds that don't exist in their native language.
+**Learn the sounds of American English, train your ear to tell them apart, and say them clearly.**
 
-> 🚧 **Status: in active development.** Follow the commits to watch it grow.
+Most learners stall at the same point: they know the words, but they can't hear the difference between *ship* and *sheep*, and they can't produce sounds their native language doesn't have. Because people tend to say what they hear, fixing the ear also fixes the mouth. That's why this app trains **sounds** rather than vocabulary. Understanding fast speech gets easier, and speaking becomes clearer.
 
-## Why
+<p>
+  <img alt="React Native" src="https://img.shields.io/badge/React%20Native-Expo%20SDK%2058-1f6f78">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1f6f78">
+  <img alt="Amazon Polly" src="https://img.shields.io/badge/Amazon%20Polly-10%20neural%20voices-c2622f">
+  <img alt="AWS" src="https://img.shields.io/badge/S3%20%2B%20CloudFront-Terraform-7a4b9c">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-25%20passing-1f6f78">
+</p>
 
-Most language apps teach vocabulary and grammar. Very few teach the sound system itself, and almost none train your ear to tell apart words like *ship* and *sheep* when they are spoken fast, by different voices, inside a real sentence.
+> 🚧 In active development. Sound map, practice and both listening games work today. Type & Listen is next.
 
-This app is built around what pronunciation research actually supports:
+---
 
-- **Intelligibility over accent.** The goal is to be clearly understood, not to sound native ([Derwing & Thomson, 2015](https://benjamins.com/online/ebop/publications/60375)).
-- **Not all errors are equal.** Contrasts that change meaning in many words, such as /iː/ vs /ɪ/, matter more than rare ones (functional load, [Munro & Derwing, 2006](https://www.frontiersin.org/articles/10.3389/fcomm.2021.627378)).
-- **Train the ear with many voices.** Hearing the same contrast from multiple speakers improves perception (High Variability Phonetic Training, [Uchihara, Karas & Thomson](https://www.cambridge.org/core/product/6ABB8C1F32D88D53EA8D05A4565E76F6/core-reader)).
+## What the app does
 
-## Features
+**1. Learn every sound.** A sound map of all 41 sounds of American English, grouped the way phoneticians group them: vowels, diphthongs, plosives, fricatives and the rest. Sounds that don't exist in Turkish are marked, so you know where to start. Tap a sound to see example words with their IPA and the sounds it's most often confused with.
 
-### 🔤 Sound Map
-Every sound of American English, grouped the way phoneticians classify them:
+**2. Practice with a growing word list.** "Practice this sound" gives you 20 words at a time from a pool of up to 150 words per sound. About 70% of each set is new and 30% is review, so you're never stuck repeating the same list. Hide the word or the IPA and guess from sound alone.
 
-| Vowels | Consonants |
-|---|---|
-| Monophthongs (short and long) | Plosives · Affricates · Nasals |
-| Diphthongs | Fricatives · Approximants |
+**3. Train your ear with games.**
+- **Word pairs:** hear a word, pick it: *ship* or *sheep*? *three* or *tree*? *van* or *fan*? 463 minimal pairs built around the contrasts learners mix up most.
+- **Find the vowel:** hear a word, see its IPA with the vowel missing (/ʃ _ p/), and choose between the sound and its two closest look-alikes.
 
-Tap a sound to hear it, see its most common example words, and find the sounds it is most often confused with.
+**4. Hear many voices, not just one.** Every word is recorded by 10 natural American voices. In the games, voices rotate so you never hear the same speaker twice in a row. Hearing many different voices is one of the best-supported ways to train the ear ([HVPT research](https://www.cambridge.org/core/product/6ABB8C1F32D88D53EA8D05A4565E76F6/core-reader)). You can also choose one voice, a random voice, or your phone's built-in voice.
 
-### 🗣️ Type & Listen
-Type any word or sentence and hear it read aloud by a natural neural voice, with the IPA transcription shown under each word. Slow playback is available for difficult phrases.
+## How it works
 
-### 🎧 Listening Test
-The app plays a word and you choose between two options, such as *ship / sheep* or *funny / bunny*. Each round varies:
-- **Speaker:** several different American voices
-- **Speed:** normal and fast
-- **Context:** the word alone, or reduced inside a natural sentence
+```
+CMU Pronouncing Dictionary + 10k most frequent English words
+        │
+        ▼  build script: ARPAbet → IPA, stress marks, word pools, minimal pairs
+        │
+  words.json (3,000+ words with IPA) · minimal-pairs.json (463 pairs)
+        │
+        ▼  generator: Amazon Polly, SSML <phoneme> forces the exact IPA shown in the app
+        │
+  ~30,000 mp3 clips  →  private S3 bucket  →  CloudFront
+        │
+        ▼
+  App downloads each clip once, caches it on the phone, prefetches the next words
+```
 
-Your score is tracked, and the pairs you confuse most come back more often.
+## Engineering highlights
 
-## Tech Stack
+**What you see is what you hear.** Many English words have more than one pronunciation (*read*, *live*, *record*). Every clip is generated with an SSML `<phoneme>` tag built from the IPA the app shows, so the audio can't contradict the transcription.
+
+**Pre-generated audio, near-zero running cost.** All clips are synthesized once (about $3 of Polly), stored in a private S3 bucket and served through CloudFront. There's no server in the request path, and repeat plays come straight from the phone's cache.
+
+**Data pipeline, not hand-typed lists.** Word pools, IPA and minimal pairs are generated from the CMU dictionary and a frequency list. Pairs are found automatically by bucketing pronunciations, so every pair differs in exactly one sound with the same stress pattern.
+
+**Small, tested logic.** Session building (70/30 new vs. review), the shuffle-bag voice rotation, stress detection and the ARPAbet-to-IPA converter are pure functions covered by unit tests.
+
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Mobile | React Native, Expo, TypeScript, Expo Router |
-| Text-to-speech | Amazon Polly (neural voices) |
-| Phonetic transcription | CMU Pronouncing Dictionary (ARPAbet → IPA) |
-| Backend | AWS API Gateway, AWS Lambda (Python), Amazon S3 audio cache |
-
-The backend is fully serverless: it costs nothing when idle, and every generated audio clip is cached in S3 so the same sentence is never synthesized twice.
+| Mobile | React Native, Expo SDK 58, TypeScript, Expo Router (native tabs) |
+| Audio | expo-audio, expo-file-system (local cache), expo-speech (fallback) |
+| Speech synthesis | Amazon Polly, 10 neural en-US voices, SSML phoneme tags |
+| Delivery | Amazon S3 (private), Amazon CloudFront (origin access control) |
+| Infrastructure | Terraform |
+| Pronunciation data | CMU Pronouncing Dictionary, ARPAbet → IPA |
+| Storage on device | AsyncStorage (seen words, voice preference) |
+| Tests | Node test runner |
 
 ## Roadmap
 
-- [x] Project setup (Expo, TypeScript)
-- [ ] Sound data: all phonemes, example words, common confusions
-- [ ] Sound Map screens
-- [ ] Serverless text-to-speech API (API Gateway + Lambda + Polly + S3)
-- [ ] Type & Listen
-- [ ] Listening Test with multi-voice audio
-- [ ] Progress tracking
+- [x] Sound map with example words and IPA
+- [x] Practice mode with rotating word sets
+- [x] 10-voice audio on S3 + CloudFront
+- [x] Listening games: Word pairs, Find the vowel
+- [ ] Type & Listen: type any sentence, hear it, see the IPA (Lambda + Polly)
+- [ ] Listening in context: fast speech and words inside sentences
+- [ ] Progress tracking: the contrasts you miss most come back more often
+- [ ] TestFlight release
 
-## Run Locally
+## Run locally
 
 ```bash
 npm install
+cp .env.example .env    # set EXPO_PUBLIC_AUDIO_BASE_URL (or leave it out to use the device voice)
 npx expo start
 ```
 
-Scan the QR code with the iPhone Camera (or the Expo Go app on Android) to open the app.
+Scan the QR code with your iPhone camera to open the app in Expo Go.
+
+<details>
+<summary>Rebuild data and audio</summary>
+
+```bash
+npm run build:words         # needs data/raw/cmudict.dict and the frequency list (see script header)
+npm run verify:phonemes
+npm test
+cd infra && terraform apply # S3 + CloudFront
+npm run generate:audio -- --bucket <bucket name>
+```
+</details>
 
 ## License
 
