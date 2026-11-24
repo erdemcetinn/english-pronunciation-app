@@ -1,14 +1,19 @@
-// Builds src/data/words.json: practice word pool per phoneme (most frequent first) + IPA for every word used.
+// Builds src/data/words.json (practice pool per phoneme + IPA for every word used)
+// and src/data/minimal-pairs.json (listening game pairs).
 // Usage: node scripts/build-practice-words.mjs
 // Inputs (data/raw, gitignored):
 //   cmudict.dict                 https://github.com/cmusphinx/cmudict
 //   freq/google-10000-usa.txt    https://github.com/first20hours/google-10000-english
+// Minimal pairs also require the word to be in /usr/share/dict/words (filters names).
 import { readFileSync, writeFileSync } from 'node:fs';
 
 import { loadCmu, matchesForPractice, toIpaSegments } from './lib/arpabet.mjs';
+import { findMinimalPairs } from './lib/minimal-pairs.mjs';
 
 const POOL_SIZE = 150;
 const MIN_WORD_LENGTH = 2;
+const PAIRS_PER_CONTRAST = 30;
+const SYSTEM_DICT = '/usr/share/dict/words';
 const root = (path) => new URL(`../${path}`, import.meta.url);
 
 // Frequent in web text but not useful for learners (names, abbreviations, brands).
@@ -37,11 +42,17 @@ const cmu = loadCmu(root('data/raw/cmudict.dict'));
 const frequent = loadFrequentWords();
 
 const practice = Object.fromEntries(phonemes.map((p) => [p.id, pickWords(p, frequent, cmu)]));
-const allWords = [...new Set(Object.values(practice).flat())].sort();
+
+const dictionary = new Set(readFileSync(SYSTEM_DICT, 'utf8').split('\n'));
+const pairCandidates = frequent.filter((w) => cmu.has(w) && dictionary.has(w));
+const pairs = findMinimalPairs(pairCandidates, cmu, phonemes, PAIRS_PER_CONTRAST);
+
+const allWords = [...new Set([...Object.values(practice).flat(), ...pairs.flatMap((p) => [p.a, p.b])])].sort();
 const ipa = Object.fromEntries(allWords.map((w) => [w, toIpaSegments(cmu.get(w))]));
 
 const short = Object.entries(practice).filter(([, words]) => words.length < POOL_SIZE);
 if (short.length > 0) console.warn('Fewer words than wanted:', short.map(([id, w]) => `${id}=${w.length}`).join(', '));
 
 writeFileSync(root('src/data/words.json'), JSON.stringify({ practice, ipa }) + '\n');
-console.log(`Wrote ${allWords.length} words for ${phonemes.length} phonemes`);
+writeFileSync(root('src/data/minimal-pairs.json'), JSON.stringify(pairs) + '\n');
+console.log(`Wrote ${allWords.length} words for ${phonemes.length} phonemes, ${pairs.length} minimal pairs`);

@@ -2,11 +2,16 @@ import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-aud
 import * as Speech from 'expo-speech';
 
 import { getAudioUri, isRemoteAudioConfigured } from '@/lib/audio-cache';
+import { shuffled } from '@/lib/practice-session';
 import { speakWord } from '@/lib/speech';
+import { createVoiceBag } from '@/lib/voice-bag';
 import { getVoiceMode, VOICES, type VoiceMode } from '@/lib/voice-settings';
 
 let player: AudioPlayer | null = null;
-let lastRandomVoice: string | null = null;
+const voiceBag = createVoiceBag(
+  VOICES.map((v) => v.id),
+  shuffled,
+);
 /** Voice chosen ahead of time for a word (random mode), so prefetch and play agree. */
 const plannedVoices = new Map<string, string>();
 
@@ -20,19 +25,12 @@ function getPlayer(): AudioPlayer {
   return player;
 }
 
-function pickRandomVoice(): string {
-  const choices = VOICES.filter((v) => v.id !== lastRandomVoice);
-  const voice = choices[Math.floor(Math.random() * choices.length)].id;
-  lastRandomVoice = voice;
-  return voice;
-}
-
 function voiceFor(word: string, mode: VoiceMode): string | null {
   if (!isRemoteAudioConfigured || mode.kind === 'device') return null;
   if (mode.kind === 'voice') return mode.voiceId;
   const planned = plannedVoices.get(word);
   plannedVoices.delete(word);
-  return planned ?? pickRandomVoice();
+  return planned ?? voiceBag.next();
 }
 
 function stopAll(): void {
@@ -40,10 +38,13 @@ function stopAll(): void {
   player?.pause();
 }
 
-/** Plays a word with the selected voice; falls back to the device voice on any error. */
-export async function playWord(word: string): Promise<void> {
+/**
+ * Plays a word with the given voice mode (default: the user's setting).
+ * Falls back to the device voice on any error.
+ */
+export async function playWord(word: string, mode: VoiceMode = getVoiceMode()): Promise<void> {
   stopAll();
-  const voice = voiceFor(word, getVoiceMode());
+  const voice = voiceFor(word, mode);
   if (!voice) return speakWord(word);
 
   try {
@@ -58,11 +59,10 @@ export async function playWord(word: string): Promise<void> {
 }
 
 /** Downloads upcoming words in the background so they play instantly. */
-export function prefetchWords(words: readonly string[]): void {
-  const mode = getVoiceMode();
+export function prefetchWords(words: readonly string[], mode: VoiceMode = getVoiceMode()): void {
   if (!isRemoteAudioConfigured || mode.kind === 'device') return;
   for (const word of words) {
-    const voice = mode.kind === 'voice' ? mode.voiceId : (plannedVoices.get(word) ?? pickRandomVoice());
+    const voice = mode.kind === 'voice' ? mode.voiceId : (plannedVoices.get(word) ?? voiceBag.next());
     if (mode.kind === 'random') plannedVoices.set(word, voice);
     getAudioUri(voice, word).catch(() => {
       // Ignored here: playWord retries and falls back to the device voice.
