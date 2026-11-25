@@ -5,6 +5,7 @@
 // Usage:
 //   node scripts/generate-audio.mjs --bucket <name> [--voices Joanna,Matthew] [--words read,live] [--overwrite] [--dry-run]
 //   --overwrite regenerates the given --words even if they exist (after a pronunciation fix).
+//   Letter names (src/data/letters.json) are included as letter-a, letter-e, ... clips.
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { readFileSync } from 'node:fs';
@@ -52,14 +53,14 @@ async function listExistingKeys(s3, bucket, voice) {
   return keys;
 }
 
-async function synthesizeAndUpload({ polly, s3, bucket }, { voice, word, segments }) {
+async function synthesizeAndUpload({ polly, s3, bucket }, { voice, word, text, segments }) {
   const speech = await polly.send(
     new SynthesizeSpeechCommand({
       Engine: 'neural',
       VoiceId: voice,
       OutputFormat: 'mp3',
       TextType: 'ssml',
-      Text: wordSsml(word, segments),
+      Text: wordSsml(text, segments),
     }),
   );
   const body = await speech.AudioStream.transformToByteArray();
@@ -98,7 +99,11 @@ async function runPool(jobs, worker) {
 
 async function main() {
   const options = parseOptions();
-  const { ipa } = readJson('src/data/words.json');
+  const { ipa: wordIpa } = readJson('src/data/words.json');
+  const letters = readJson('src/data/letters.json');
+  // Clip key -> IPA and the text Polly reads (a letter key like letter-a is read as "A").
+  const ipa = { ...wordIpa, ...Object.fromEntries(letters.map((l) => [l.key, l.ipa])) };
+  const textFor = Object.fromEntries(letters.map((l) => [l.key, l.letter]));
   const allVoices = readJson('src/data/voices.json').map((v) => v.id);
   const voices = options.voices ?? allVoices;
   const words = options.words ?? Object.keys(ipa);
@@ -113,11 +118,11 @@ async function main() {
   for (const voice of voices) {
     const existing = options.isOverwrite ? new Set() : await listExistingKeys(s3, options.bucket, voice);
     for (const word of words) {
-      if (!existing.has(audioKey(voice, word))) jobs.push({ voice, word, segments: ipa[word] });
+      if (!existing.has(audioKey(voice, word))) jobs.push({ voice, word, text: textFor[word] ?? word, segments: ipa[word] });
     }
   }
 
-  const characters = jobs.reduce((sum, job) => sum + job.word.length, 0);
+  const characters = jobs.reduce((sum, job) => sum + job.text.length, 0);
   console.log(`To generate: ${jobs.length} files, ~${characters} billed characters`);
   if (options.isDryRun || jobs.length === 0) return;
 

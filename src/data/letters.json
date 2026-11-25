@@ -1,0 +1,7 @@
+[
+  { "letter": "A", "key": "letter-a", "ipa": ["eɪ"] },
+  { "letter": "E", "key": "letter-e", "ipa": ["i"] },
+  { "letter": "I", "key": "letter-i", "ipa": ["aɪ"] },
+  { "letter": "O", "key": "letter-o", "ipa": ["oʊ"] },
+  { "letter": "U", "key": "letter-u", "ipa": ["j", "u"] }
+]

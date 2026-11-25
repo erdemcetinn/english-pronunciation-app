@@ -1,6 +1,7 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import * as Speech from 'expo-speech';
 
+import { getLetter } from '@/data/letters';
 import { getAudioUri, isRemoteAudioConfigured } from '@/lib/audio-cache';
 import { shuffled } from '@/lib/practice-session';
 import { speakWord } from '@/lib/speech';
@@ -38,24 +39,34 @@ function stopAll(): void {
   player?.pause();
 }
 
-/**
- * Plays a word with the given voice mode (default: the user's setting).
- * Falls back to the device voice on any error.
- */
-export async function playWord(word: string, mode: VoiceMode = getVoiceMode()): Promise<void> {
+/** Plays the clip `key`; the device voice says `spokenText` when Polly audio is off or fails. */
+async function playClip(key: string, spokenText: string, mode: VoiceMode): Promise<void> {
   stopAll();
-  const voice = voiceFor(word, mode);
-  if (!voice) return speakWord(word);
+  const voice = voiceFor(key, mode);
+  if (!voice) return speakWord(spokenText);
 
   try {
-    const uri = await getAudioUri(voice, word);
+    const uri = await getAudioUri(voice, key);
     const audio = getPlayer();
     audio.replace({ uri });
     audio.play();
   } catch (error) {
-    console.warn(`Polly audio failed for ${voice}/${word}, using device voice`, error);
-    speakWord(word);
+    console.warn(`Polly audio failed for ${voice}/${key}, using device voice`, error);
+    speakWord(spokenText);
   }
+}
+
+/**
+ * Plays a word with the given voice mode (default: the user's setting).
+ * Falls back to the device voice on any error.
+ */
+export function playWord(word: string, mode: VoiceMode = getVoiceMode()): Promise<void> {
+  return playClip(word, word, mode);
+}
+
+/** Plays the English name of a letter: A /eɪ/, E /i/, I /aɪ/. */
+export function playLetter(letter: string, mode: VoiceMode = getVoiceMode()): Promise<void> {
+  return playClip(getLetter(letter).key, letter, mode);
 }
 
 /** Downloads upcoming words in the background so they play instantly. */
@@ -67,5 +78,17 @@ export function prefetchWords(words: readonly string[], mode: VoiceMode = getVoi
     getAudioUri(voice, word).catch(() => {
       // Ignored here: playWord retries and falls back to the device voice.
     });
+  }
+}
+
+/** Downloads every voice for the given clips (small sets only, e.g. letter names), so timing games never wait. */
+export function prefetchAllVoices(keys: readonly string[]): void {
+  if (!isRemoteAudioConfigured) return;
+  for (const { id } of VOICES) {
+    for (const key of keys) {
+      getAudioUri(id, key).catch(() => {
+        // Ignored here: playback retries and falls back to the device voice.
+      });
+    }
   }
 }

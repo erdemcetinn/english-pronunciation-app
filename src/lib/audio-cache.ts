@@ -1,5 +1,6 @@
 import { Directory, File, Paths } from 'expo-file-system';
 
+import { getLetterSegmentsByKey } from '@/data/letters';
 import { getIpaSegments } from '@/data/words';
 
 const BASE_URL = process.env.EXPO_PUBLIC_AUDIO_BASE_URL;
@@ -10,10 +11,16 @@ const inFlight = new Map<string, Promise<string>>();
 
 export const isRemoteAudioConfigured = Boolean(BASE_URL);
 
+/** IPA of a clip: a dictionary word, or a letter name key like letter-a. */
+function clipSegments(word: string): readonly string[] {
+  const segments = getIpaSegments(word);
+  return segments.length > 0 ? segments : getLetterSegmentsByKey(word);
+}
+
 /** Short hash of the word's IPA: if a pronunciation is fixed, the old cached file is ignored. */
 function ipaFingerprint(word: string): string {
   let hash = 5381;
-  for (const char of getIpaSegments(word).join('')) hash = ((hash * 33) ^ char.charCodeAt(0)) >>> 0;
+  for (const char of clipSegments(word).join('')) hash = ((hash * 33) ^ char.charCodeAt(0)) >>> 0;
   return hash.toString(36);
 }
 
