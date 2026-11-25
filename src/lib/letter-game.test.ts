@@ -7,15 +7,13 @@ const POOL = ['A', 'E', 'I', 'O', 'U'];
 const keepOrder = <T>(items: readonly T[]) => [...items];
 const reverse = <T>(items: readonly T[]) => [...items].reverse();
 
-test('never repeats the previous target', () => {
-  for (let i = 0; i < 20; i += 1) {
-    const round = nextLetterRound({ pool: ['A', 'E'], previous: 'A', optionCount: 2, shuffle: keepOrder, random: Math.random });
-    assert.equal(round.target, 'E');
-  }
+test('any letter can be the target, repeats included (no "not the last one" shortcut)', () => {
+  assert.equal(nextLetterRound({ pool: POOL, optionCount: 3, shuffle: keepOrder, random: () => 0 }).target, 'A');
+  assert.equal(nextLetterRound({ pool: POOL, optionCount: 3, shuffle: keepOrder, random: () => 0.99 }).target, 'U');
 });
 
 test('options contain the target plus distinct distractors from the pool', () => {
-  const round = nextLetterRound({ pool: POOL, previous: null, optionCount: 3, shuffle: keepOrder, random: () => 0 });
+  const round = nextLetterRound({ pool: POOL, optionCount: 3, shuffle: keepOrder, random: () => 0 });
   assert.equal(round.target, 'A');
   assert.equal(round.options.length, 3);
   assert.ok(round.options.includes('A'));
@@ -24,13 +22,13 @@ test('options contain the target plus distinct distractors from the pool', () =>
 });
 
 test('options are shuffled, so the target is not always first', () => {
-  const round = nextLetterRound({ pool: ['A', 'E', 'I'], previous: null, optionCount: 3, shuffle: reverse, random: () => 0 });
+  const round = nextLetterRound({ pool: ['A', 'E', 'I'], optionCount: 3, shuffle: reverse, random: () => 0 });
   assert.equal(round.target, 'A');
   assert.notEqual(round.options[0], 'A');
 });
 
 test('option count is capped at the pool size', () => {
-  const round = nextLetterRound({ pool: ['A', 'E', 'I'], previous: null, optionCount: 5, shuffle: keepOrder, random: () => 0 });
+  const round = nextLetterRound({ pool: ['A', 'E', 'I'], optionCount: 5, shuffle: keepOrder, random: () => 0 });
   assert.equal(round.options.length, 3);
 });
 

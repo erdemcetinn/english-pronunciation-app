@@ -13,10 +13,12 @@ interface LetterOptionProps {
   state: LetterOptionState;
   onPress: () => void;
   accessibilityLabel: string;
+  /** True while this option's sound is playing in the auto sequence. */
+  isPlaying?: boolean;
 }
 
 /** A big tappable answer: a letter (speed mode) or a sound button (sound mode). */
-export function LetterOption({ title, subtitle, state, onPress, accessibilityLabel }: LetterOptionProps) {
+export function LetterOption({ title, subtitle, state, onPress, accessibilityLabel, isPlaying = false }: LetterOptionProps) {
   const colors = useTheme();
   const borderColor = {
     idle: 'transparent',
@@ -25,12 +27,16 @@ export function LetterOption({ title, subtitle, state, onPress, accessibilityLab
     correct: SUCCESS_COLOR,
     wrong: colors.warning,
   }[state];
+  const backgroundColor = (pressed: boolean) => (pressed || isPlaying ? colors.tilePressed : colors.tile);
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityLabel={accessibilityLabel}
-      style={({ pressed }) => [styles.option, { backgroundColor: pressed ? colors.tilePressed : colors.tile, borderColor }]}>
+      style={({ pressed }) => [
+        styles.option,
+        { backgroundColor: backgroundColor(pressed), borderColor: isPlaying ? colors.accent : borderColor },
+      ]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       {subtitle && <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{subtitle}</Text>}
     </Pressable>

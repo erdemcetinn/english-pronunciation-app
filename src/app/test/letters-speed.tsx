@@ -18,8 +18,8 @@ import { shuffled } from '@/lib/practice-session';
 const NEXT_DELAY_CORRECT_MS = 600;
 const NEXT_DELAY_WRONG_MS = 1800;
 
-const newRound = (pool: readonly string[], previous: string | null): LetterRound =>
-  nextLetterRound({ pool, previous, optionCount: pool.length, shuffle: shuffled, random: Math.random });
+const newRound = (pool: readonly string[]): LetterRound =>
+  nextLetterRound({ pool, optionCount: pool.length, shuffle: shuffled, random: Math.random });
 
 const formatSeconds = (ms: number | null) => (ms === null ? '-' : `${(ms / 1000).toFixed(2)} s`);
 
@@ -33,7 +33,7 @@ export default function LetterSpeedScreen() {
   const colors = useTheme();
   const [isExtended, setIsExtended] = useState(false);
   const pool = letterPool(isExtended);
-  const [round, setRound] = useState(() => newRound(pool, null));
+  const [round, setRound] = useState(() => newRound(pool));
   const [answer, setAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
   const [times, setTimes] = useState<readonly number[]>([]);
@@ -59,7 +59,7 @@ export default function LetterSpeedScreen() {
     if (!answer) return;
     const delay = answer === round.target ? NEXT_DELAY_CORRECT_MS : NEXT_DELAY_WRONG_MS;
     const timer = setTimeout(() => {
-      setRound(newRound(pool, round.target));
+      setRound(newRound(pool));
       setAnswer(null);
     }, delay);
     return () => clearTimeout(timer);
@@ -79,7 +79,7 @@ export default function LetterSpeedScreen() {
   const toggleExtended = () => {
     const nextPool = letterPool(!isExtended);
     setIsExtended(!isExtended);
-    setRound(newRound(nextPool, null));
+    setRound(newRound(nextPool));
     setAnswer(null);
   };
 

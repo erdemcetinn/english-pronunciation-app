@@ -10,16 +10,17 @@ export interface LetterRound {
 
 interface LetterRoundInput {
   pool: readonly string[];
-  previous: string | null;
   optionCount: number;
   shuffle: Shuffle;
   random: Random;
 }
 
-/** Picks a target (never the previous one) and up to optionCount distinct options. */
-export function nextLetterRound({ pool, previous, optionCount, shuffle, random }: LetterRoundInput): LetterRound {
-  const choices = pool.length > 1 ? pool.filter((l) => l !== previous) : pool;
-  const target = choices[Math.floor(random() * choices.length)];
+/**
+ * Picks a random target and up to optionCount distinct options.
+ * Repeats are allowed on purpose: with only 3 letters, "never the previous one" would give answers away.
+ */
+export function nextLetterRound({ pool, optionCount, shuffle, random }: LetterRoundInput): LetterRound {
+  const target = pool[Math.floor(random() * pool.length)];
   const distractors = shuffle(pool.filter((l) => l !== target)).slice(0, optionCount - 1);
   return { target, options: shuffle([target, ...distractors]) };
 }
