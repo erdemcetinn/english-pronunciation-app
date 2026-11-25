@@ -64,9 +64,12 @@ export function playWord(word: string, mode: VoiceMode = getVoiceMode()): Promis
   return playClip(word, word, mode);
 }
 
-/** Plays the English name of a letter: A /eɪ/, E /i/, I /aɪ/. */
+/**
+ * Plays the English name of a letter: A /eɪ/, E /i/, I /aɪ/.
+ * The device fallback gets the lowercase letter: iOS reads a lone capital as "capital A".
+ */
 export function playLetter(letter: string, mode: VoiceMode = getVoiceMode()): Promise<void> {
-  return playClip(getLetter(letter).key, letter, mode);
+  return playClip(getLetter(letter).key, letter.toLowerCase(), mode);
 }
 
 /** Downloads upcoming words in the background so they play instantly. */
