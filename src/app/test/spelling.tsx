@@ -115,8 +115,11 @@ export default function SpellingScreen() {
         results={result?.slots ?? null}
       />
 
-      <Pressable onPress={() => start(letters)} accessibilityLabel="Spell the word again">
-        <Text style={[styles.replay, { color: colors.accent }]}>▶︎ Spell again</Text>
+      <Pressable
+        onPress={() => start(letters)}
+        accessibilityLabel="Spell the word again"
+        style={({ pressed }) => [styles.secondary, { backgroundColor: pressed ? colors.tilePressed : colors.tile }]}>
+        <Text style={[styles.secondaryText, { color: colors.accent }]}>▶︎ Spell again</Text>
       </Pressable>
 
       {result && (
@@ -140,8 +143,11 @@ export default function SpellingScreen() {
       </Pressable>
 
       {!result && (
-        <Pressable onPress={goNext} accessibilityLabel="Skip to the next word">
-          <Text style={[styles.replay, { color: colors.textSecondary }]}>Skip word ⏭</Text>
+        <Pressable
+          onPress={goNext}
+          accessibilityLabel="Skip to the next word"
+          style={({ pressed }) => [styles.secondary, { backgroundColor: pressed ? colors.tilePressed : colors.tile }]}>
+          <Text style={[styles.secondaryText, { color: colors.textSecondary }]}>Skip word ⏭</Text>
         </Pressable>
       )}
     </ScrollView>
@@ -152,7 +158,8 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingBottom: Spacing.lg + LIFT, gap: Spacing.lg },
   question: { textAlign: 'center', fontSize: 16 },
-  replay: { textAlign: 'center', fontSize: 16, fontWeight: '600' },
+  secondary: { paddingVertical: Spacing.md, borderRadius: Radius.lg, alignItems: 'center' },
+  secondaryText: { fontSize: 18, fontWeight: '600' },
   answer: { alignItems: 'center', gap: Spacing.xs },
   feedback: { fontSize: 20, fontWeight: '700' },
   ipa: { fontSize: 20 },

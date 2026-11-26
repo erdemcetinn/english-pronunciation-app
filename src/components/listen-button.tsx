@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-const SIZE = 120;
+const SIZE = 136;
 
 export function ListenButton({ onPress }: { onPress: () => void }) {
   const colors = useTheme();
@@ -28,6 +28,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.xs,
   },
-  icon: { color: '#FFFFFF', fontSize: 36 },
-  text: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  icon: { color: '#FFFFFF', fontSize: 40 },
+  text: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
 });
