@@ -21,18 +21,18 @@ test('checkSpelling: marks each slot, missing letters count as wrong', () => {
 
 const keepOrder = <T>(items: readonly T[]) => [...items];
 
-test('letter bank: every letter of the word (repeats kept) plus confusable decoys', () => {
+test('letter bank: each letter of the word once (tiles are reusable) plus confusable decoys', () => {
   const bank = buildLetterBank('book', { decoyCount: 2, shuffle: keepOrder });
-  assert.deepEqual(bank.slice(0, 4).map((t) => t.letter), ['B', 'O', 'O', 'K']);
-  assert.equal(bank.length, 6);
+  assert.deepEqual(bank.slice(0, 3).map((t) => t.letter), ['B', 'O', 'K']);
+  assert.equal(bank.length, 5);
   // B -> V, P and K -> C, Q are the confusable decoys; none are in the word.
-  assert.ok(bank.slice(4).every((t) => ['V', 'P', 'C', 'Q', 'U'].includes(t.letter)));
+  assert.ok(bank.slice(3).every((t) => ['V', 'P', 'C', 'Q', 'U'].includes(t.letter)));
   assert.equal(new Set(bank.map((t) => t.id)).size, bank.length);
 });
 
 test('letter bank: fills up with other letters when confusables run out', () => {
   const bank = buildLetterBank('aaa', { decoyCount: 5, shuffle: keepOrder });
-  const decoys = bank.slice(3).map((t) => t.letter);
+  const decoys = bank.slice(1).map((t) => t.letter);
   assert.equal(decoys.length, 5);
   assert.equal(new Set(decoys).size, 5);
   assert.ok(!decoys.includes('A'));

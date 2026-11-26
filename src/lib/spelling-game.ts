@@ -42,9 +42,12 @@ interface BankOptions {
   shuffle: <T>(items: readonly T[]) => T[];
 }
 
-/** The word's letters (repeats kept) plus decoys: confusable letters first, then random others. */
+/**
+ * Each letter of the word once (a tile can be used any number of times) plus decoys:
+ * confusable letters first, then random others.
+ */
 export function buildLetterBank(word: string, { decoyCount, shuffle }: BankOptions): LetterTile[] {
-  const letters = [...word.toUpperCase()];
+  const letters = [...new Set(word.toUpperCase())];
   const inWord = new Set(letters);
   const notInWord = (l: string) => !inWord.has(l);
   const confusable = [...new Set(letters.flatMap((l) => CONFUSABLE[l] ?? []))].filter(notInWord);

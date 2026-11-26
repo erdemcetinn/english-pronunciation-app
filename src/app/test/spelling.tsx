@@ -21,7 +21,7 @@ import { VOICES, type VoiceMode } from '@/lib/voice-settings';
 
 const SEEN_LIST_ID = 'game-spelling';
 const WORD_LIMITS = { minLength: 3, maxLength: 7 };
-/** Extra letters in the bank, so the word can't be solved as an anagram without listening. */
+/** Extra letters in the bank, so the word can't be guessed from the tiles without listening. */
 const DECOY_COUNT = 3;
 const SPELL_STEP_MS = 900;
 /** Extra bottom space: keeps the content centered but a little above the middle. */
@@ -56,7 +56,7 @@ export default function SpellingScreen() {
   const colors = useTheme();
   const { seen, markSeen } = useSeenWords(SEEN_LIST_ID);
   const [round, setRound] = useState<SpellingRound | null>(null);
-  const [usedIds, setUsedIds] = useState<readonly number[]>([]);
+  const [typed, setTyped] = useState('');
   const [result, setResult] = useState<SpellingResult | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
   /** The word whose letter clips are on the phone; letters only play after that. */
@@ -67,10 +67,6 @@ export default function SpellingScreen() {
   const sequence = usePlaySequence(playOne, SPELL_STEP_MS);
   const { start } = sequence;
   const letters = useMemo(() => round?.letters ?? [], [round]);
-  const typed = useMemo(
-    () => usedIds.map((id) => round?.bank.find((t) => t.id === id)?.letter ?? '').join('').toLowerCase(),
-    [usedIds, round],
-  );
 
   // Start once the seen history has loaded, so the first words are fresh too.
   useEffect(() => {
@@ -106,14 +102,14 @@ export default function SpellingScreen() {
   const isComplete = typed.length === round.word.length;
 
   const pickTile = (tile: LetterTile) => {
-    if (result || isComplete || usedIds.includes(tile.id)) return;
-    setUsedIds([...usedIds, tile.id]);
+    if (result || isComplete) return;
+    setTyped(typed + tile.letter.toLowerCase());
   };
 
   const deleteLast = () => {
-    if (result || usedIds.length === 0) return;
+    if (result || typed.length === 0) return;
     sequence.stop();
-    setUsedIds(usedIds.slice(0, -1));
+    setTyped(typed.slice(0, -1));
   };
 
   const check = () => {
@@ -134,7 +130,7 @@ export default function SpellingScreen() {
   const goNext = () => {
     sequence.stop();
     setRound(newRound(seen ?? {}));
-    setUsedIds([]);
+    setTyped('');
     setResult(null);
   };
 
@@ -170,7 +166,7 @@ export default function SpellingScreen() {
               title={tile.letter}
               state="idle"
               isCompact
-              isDisabled={usedIds.includes(tile.id) || isComplete}
+              isDisabled={isComplete}
               onPress={() => pickTile(tile)}
               accessibilityLabel={`Letter ${tile.letter}`}
               style={styles.tile}
