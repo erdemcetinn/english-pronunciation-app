@@ -12,7 +12,7 @@ Most learners stall at the same point: they know the words, but they can't hear 
   <img alt="Tests" src="https://img.shields.io/badge/tests-39%20passing-1f6f78">
 </p>
 
-> 🚧 In active development. Sound map, practice and four listening games work today. Type & Listen is next.
+> 🚧 In active development. Sound map, practice and three listening games and a spelling game work today. Type & Listen is next.
 
 ---
 
@@ -25,7 +25,7 @@ Most learners stall at the same point: they know the words, but they can't hear 
 **3. Train your ear with games.**
 - **Word pairs:** hear a word, pick it: *ship* or *sheep*? *three* or *tree*? *van* or *fan*? 463 minimal pairs built around the contrasts learners mix up most.
 - **Find the vowel:** hear a word, see its IPA with the vowel missing (/ʃ _ p/), and choose between the sound and its two closest look-alikes.
-- **Letter names:** A says /eɪ/, E says /i/, I says /aɪ/, a classic trap for Turkish speakers when spelling names or emails. *Speed* mode plays a letter and times how fast you tap it, with a vowel set (A E I, + O U) and a wider set (B C D F G J M N P R S U V Y). *Sound* mode shows a letter, reads three candidate names in order, and you pick the right one.
+- **Letter names:** A says /eɪ/, E says /i/, I says /aɪ/, a classic trap for Turkish speakers when spelling names or emails. *Speed* mode plays a letter and times how fast you tap it, with a vowel set (A E I, + O U) and a wider set (B C D F G J M N P R S U V Y).
 - **Spelling:** a word is dictated letter by letter, the way names and emails are spelled on the phone. You see one blank per letter and pick letters from a small bank of reusable tiles (with look-alike decoys like E/I or G/J). The next letter plays as soon as you pick the current one.
 
 **4. Hear many voices, not just one.** Every word is recorded by 10 natural American voices. In the games, voices rotate so you never hear the same speaker twice in a row. Hearing many different voices is one of the best-supported ways to train the ear ([HVPT research](https://www.cambridge.org/core/product/6ABB8C1F32D88D53EA8D05A4565E76F6/core-reader)). You can also choose one voice, a random voice, or your phone's built-in voice.

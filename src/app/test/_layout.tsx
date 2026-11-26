@@ -7,7 +7,6 @@ export default function TestLayout() {
       <Stack.Screen name="pairs" options={{ title: 'Word pairs' }} />
       <Stack.Screen name="vowel" options={{ title: 'Find the vowel' }} />
       <Stack.Screen name="letters-speed" options={{ title: 'Letter names: speed' }} />
-      <Stack.Screen name="letters-sound" options={{ title: 'Letter names: sound' }} />
       <Stack.Screen name="spelling" options={{ title: 'Spelling' }} />
     </Stack>
   );

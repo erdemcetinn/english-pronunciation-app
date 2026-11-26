@@ -2,8 +2,6 @@ import { CONSONANT_SET_LETTERS, CORE_LETTERS, getLetter, VOWEL_LETTERS } from '@
 
 export const letterKeys = (letters: readonly string[]) => letters.map((l) => getLetter(l).key);
 
-/** Clips the letter names sound mode uses (vowel letters only). */
-export const LETTER_KEYS = letterKeys(VOWEL_LETTERS);
 export const EXTEND_LABEL = '+ O, U';
 
 export const letterPool = (isExtended: boolean) => (isExtended ? VOWEL_LETTERS : CORE_LETTERS);

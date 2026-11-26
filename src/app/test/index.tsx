@@ -8,7 +8,6 @@ const GAMES: readonly { href: Href; title: string; description: string }[] = [
   { href: '/test/pairs', title: 'Word pairs', description: 'Hear a word and pick it: ship or sheep?' },
   { href: '/test/vowel', title: 'Find the vowel', description: 'Hear a word and fill in its missing vowel: /ʃ_p/' },
   { href: '/test/letters-speed', title: 'Letter names: speed', description: 'Hear a letter name (A, E, I or B, C, G, J, R…) and tap it fast' },
-  { href: '/test/letters-sound', title: 'Letter names: sound', description: 'See a letter and find how its name sounds' },
   { href: '/test/spelling', title: 'Spelling', description: 'Hear a word spelled letter by letter and type it' },
 ];
 

@@ -4,8 +4,8 @@ import { SUCCESS_COLOR } from '@/constants/game';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-/** idle · selected (picked, not checked yet) · correct · wrong (picked but wrong) · neutral (other options after answering) */
-export type LetterOptionState = 'idle' | 'selected' | 'correct' | 'wrong' | 'neutral';
+/** idle · correct · wrong (picked but wrong) · neutral (other options after answering) */
+export type LetterOptionState = 'idle' | 'correct' | 'wrong' | 'neutral';
 
 interface LetterOptionProps {
   title: string;
@@ -13,8 +13,6 @@ interface LetterOptionProps {
   state: LetterOptionState;
   onPress: () => void;
   accessibilityLabel: string;
-  /** True while this option's sound is playing in the auto sequence. */
-  isPlaying?: boolean;
   /** Smaller tile for big letter grids. */
   isCompact?: boolean;
   /** Dimmed and not tappable (e.g. a letter tile already used). */
@@ -22,14 +20,13 @@ interface LetterOptionProps {
   style?: ViewStyle;
 }
 
-/** A big tappable answer: a letter (speed mode) or a sound button (sound mode). */
+/** A big tappable letter tile (speed game answers, spelling letter bank). */
 export function LetterOption({
   title,
   subtitle,
   state,
   onPress,
   accessibilityLabel,
-  isPlaying = false,
   isCompact = false,
   isDisabled = false,
   style,
@@ -38,11 +35,9 @@ export function LetterOption({
   const borderColor = {
     idle: 'transparent',
     neutral: 'transparent',
-    selected: colors.accent,
     correct: SUCCESS_COLOR,
     wrong: colors.warning,
   }[state];
-  const backgroundColor = (pressed: boolean) => (pressed || isPlaying ? colors.tilePressed : colors.tile);
 
   return (
     <Pressable
@@ -53,7 +48,7 @@ export function LetterOption({
         styles.option,
         isCompact && styles.compact,
         isDisabled && styles.disabled,
-        { backgroundColor: backgroundColor(pressed), borderColor: isPlaying ? colors.accent : borderColor },
+        { backgroundColor: pressed ? colors.tilePressed : colors.tile, borderColor },
         style,
       ]}>
       <Text style={[styles.title, isCompact && styles.compactTitle, { color: colors.text }]}>{title}</Text>
