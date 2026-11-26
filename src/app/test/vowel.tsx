@@ -16,6 +16,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { playWord, prefetchWords } from '@/lib/play-word';
 import { pickFresh } from '@/lib/pick-fresh';
+import { recordSkill } from '@/lib/skill-store';
 import { shuffled, type SeenMap } from '@/lib/practice-session';
 import { nextVowelRound, type VowelRound } from '@/lib/vowel-game';
 
@@ -96,8 +97,10 @@ export default function FindTheVowelScreen() {
       if (example) void playWord(example, GAME_VOICES);
       return;
     }
+    const isCorrect = id === round.vowelId;
     setAnswer(id);
-    setScore(scoreAnswer(score, id === round.vowelId));
+    setScore(scoreAnswer(score, isCorrect));
+    recordSkill('sounds', round.vowelId, { isCorrect, chosen: isCorrect ? undefined : id });
   };
 
   const goNext = () => {

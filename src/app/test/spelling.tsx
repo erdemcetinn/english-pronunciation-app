@@ -14,6 +14,7 @@ import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { pickFresh } from '@/lib/pick-fresh';
+import { recordSkill } from '@/lib/skill-store';
 import { playLetter, playWord, preloadClips, prefetchWords } from '@/lib/play-word';
 import { shuffled, type SeenMap } from '@/lib/practice-session';
 import {
@@ -124,6 +125,13 @@ export default function SpellingScreen() {
     const checked = checkSpelling(picked, round.letters);
     sequence.stop();
     setResult(checked);
+    // Each slot is one letter-name answer (untimed: thinking time isn't reaction time).
+    round.letters.forEach((letter, index) =>
+      recordSkill('letters', letter, {
+        isCorrect: checked.slots[index],
+        chosen: checked.slots[index] ? undefined : picked[index],
+      }),
+    );
     setScore(scoreAnswer(score, checked.isCorrect));
     void playWord(round.word, round.voice);
   };

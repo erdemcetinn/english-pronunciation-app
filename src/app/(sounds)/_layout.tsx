@@ -6,6 +6,7 @@ export default function SoundsLayout() {
       <Stack.Screen name="index" options={{ title: 'Sounds', headerLargeTitle: true }} />
       <Stack.Screen name="phoneme/[id]" options={{ title: '' }} />
       <Stack.Screen name="practice/[id]" options={{ title: 'Practice' }} />
+      <Stack.Screen name="letter/[letter]" options={{ title: '' }} />
     </Stack>
   );
 }

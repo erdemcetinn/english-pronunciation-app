@@ -14,6 +14,7 @@ import { nextLetterRound, summarizeTimes, type LetterRound } from '@/lib/letter-
 import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { playLetter, prefetchAllVoices } from '@/lib/play-word';
 import { shuffled } from '@/lib/practice-session';
+import { recordSkill } from '@/lib/skill-store';
 
 const NEXT_DELAY_CORRECT_MS = 600;
 const NEXT_DELAY_WRONG_MS = 1800;
@@ -85,6 +86,11 @@ export default function LetterSpeedScreen() {
     setLastTime(isCorrect ? elapsed : null);
     if (isCorrect && elapsed !== null) setTimes([...times, elapsed]);
     if (!isCorrect) void playLetter(round.target, GAME_VOICES);
+    recordSkill('letters', round.target, {
+      isCorrect,
+      chosen: isCorrect ? undefined : letter,
+      ms: elapsed ?? undefined,
+    });
   };
 
   /** Switching letters starts fresh: times from different sets aren't comparable. */

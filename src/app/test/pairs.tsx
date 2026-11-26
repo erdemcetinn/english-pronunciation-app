@@ -14,6 +14,7 @@ import { INITIAL_SCORE, nextRound, pairKey, scoreAnswer, type Round } from '@/li
 import { pickFresh } from '@/lib/pick-fresh';
 import type { SeenMap } from '@/lib/practice-session';
 import { playWord, prefetchWords } from '@/lib/play-word';
+import { recordSkill } from '@/lib/skill-store';
 
 const SEEN_LIST_ID = 'game-pairs';
 
@@ -25,6 +26,10 @@ function contrastLabel(round: Round): string {
   const [a, b] = round.pair.contrast.map((id) => getPhonemeById(id)?.ipa ?? id);
   return `/${a}/ vs /${b}/`;
 }
+
+/** Phoneme id that makes `word` different from the other word in its pair. */
+const soundOf = (word: string, round: Round) =>
+  word === round.pair.a ? round.pair.contrast[0] : round.pair.contrast[1];
 
 function optionState(word: string, round: Round, answer: string | null): OptionState {
   if (!answer) return 'idle';
@@ -62,8 +67,13 @@ export default function WordPairsScreen() {
 
   const choose = (word: string) => {
     if (answer) return void playWord(word, GAME_VOICES);
+    const isCorrect = word === round.target;
     setAnswer(word);
-    setScore(scoreAnswer(score, word === round.target));
+    setScore(scoreAnswer(score, isCorrect));
+    recordSkill('sounds', soundOf(round.target, round), {
+      isCorrect,
+      chosen: isCorrect ? undefined : soundOf(word, round),
+    });
   };
 
   const goNext = () => {

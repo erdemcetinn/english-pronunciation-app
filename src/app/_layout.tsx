@@ -1,9 +1,11 @@
 import { NativeTabs } from 'expo-router/native-tabs';
 
+import { loadSkillLogs } from '@/lib/skill-store';
 import { loadVoiceMode } from '@/lib/voice-settings';
 
-// Restore the saved voice choice before any screen plays audio.
+// Restore the saved voice choice and score history before any screen uses them.
 void loadVoiceMode();
+void loadSkillLogs();
 
 export default function RootLayout() {
   return (

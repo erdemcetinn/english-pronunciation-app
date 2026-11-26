@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { IpaText } from '@/components/ipa-text';
+import { SkillCard } from '@/components/skill-card';
 import { VoiceChip } from '@/components/voice-chip';
 import { GROUP_LABELS } from '@/constants/groups';
 import { Radius, Spacing } from '@/constants/theme';
@@ -11,6 +12,8 @@ import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
 import type { SeenMap } from '@/lib/practice-session';
 import { playWord } from '@/lib/play-word';
+import { soundScore } from '@/lib/skill-score';
+import { useSkillLog } from '@/lib/skill-store';
 
 export default function PhonemeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -18,6 +21,7 @@ export default function PhonemeDetailScreen() {
   const router = useRouter();
   const phoneme = getPhonemeById(id);
   const { seen } = useSeenWords(id);
+  const soundLog = useSkillLog('sounds');
 
   if (!phoneme) {
     return (
@@ -56,6 +60,16 @@ export default function PhonemeDetailScreen() {
           {countSeen(seen, getPracticeWords(phoneme.id))} / {getPracticeWords(phoneme.id).length} words seen
         </Text>
       )}
+
+      <View style={styles.spaced}>
+        <SkillCard
+          score={soundScore(soundLog[phoneme.id] ?? [])}
+          attempts={soundLog[phoneme.id] ?? []}
+          labelFor={soundLabel}
+          formula="Score: share of correct answers in your last 20, from Word pairs and Find the vowel."
+          sources={phoneme.group === 'monophthong' || phoneme.group === 'diphthong' ? 'Word pairs or Find the vowel' : 'Word pairs'}
+        />
+      </View>
 
       <View style={styles.examplesHeader}>
         <Text style={[styles.heading, { color: colors.text }]}>Examples</Text>
@@ -101,6 +115,11 @@ export default function PhonemeDetailScreen() {
       )}
     </ScrollView>
   );
+}
+
+function soundLabel(id: string): string {
+  const other = getPhonemeById(id);
+  return other ? `/${other.ipa}/ (${other.examples[0]})` : id;
 }
 
 function countSeen(seen: SeenMap, pool: readonly string[]): number {
