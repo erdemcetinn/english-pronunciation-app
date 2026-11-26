@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { IpaText } from '@/components/ipa-text';
 import { SkillCard } from '@/components/skill-card';
+import { soundLabel } from '@/constants/skill-labels';
 import { VoiceChip } from '@/components/voice-chip';
 import { GROUP_LABELS } from '@/constants/groups';
 import { Radius, Spacing } from '@/constants/theme';
@@ -115,11 +116,6 @@ export default function PhonemeDetailScreen() {
       )}
     </ScrollView>
   );
-}
-
-function soundLabel(id: string): string {
-  const other = getPhonemeById(id);
-  return other ? `/${other.ipa}/ (${other.examples[0]})` : id;
 }
 
 function countSeen(seen: SeenMap, pool: readonly string[]): number {

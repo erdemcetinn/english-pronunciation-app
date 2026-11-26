@@ -14,7 +14,7 @@ import { INITIAL_SCORE, nextRound, pairKey, scoreAnswer, type Round } from '@/li
 import { pickFresh } from '@/lib/pick-fresh';
 import type { SeenMap } from '@/lib/practice-session';
 import { playWord, prefetchWords } from '@/lib/play-word';
-import { recordSkill } from '@/lib/skill-store';
+import { recordAnswer } from '@/lib/skill-store';
 
 const SEEN_LIST_ID = 'game-pairs';
 
@@ -70,7 +70,7 @@ export default function WordPairsScreen() {
     const isCorrect = word === round.target;
     setAnswer(word);
     setScore(scoreAnswer(score, isCorrect));
-    recordSkill('sounds', soundOf(round.target, round), {
+    recordAnswer('pairs', soundOf(round.target, round), {
       isCorrect,
       chosen: isCorrect ? undefined : soundOf(word, round),
     });

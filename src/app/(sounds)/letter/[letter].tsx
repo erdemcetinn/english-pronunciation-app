@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { SkillCard } from '@/components/skill-card';
+import { letterLabel } from '@/constants/skill-labels';
 import { GAME_VOICES } from '@/constants/game';
 import { ipaLabel, speedPool } from '@/constants/letters-game';
 import { Radius, Spacing } from '@/constants/theme';
@@ -10,11 +11,6 @@ import { useTheme } from '@/hooks/use-theme';
 import { playLetter } from '@/lib/play-word';
 import { hasSpeedData, letterScore, type Attempt } from '@/lib/skill-score';
 import { useSkillLog } from '@/lib/skill-store';
-
-const letterLabel = (letter: string) => {
-  const found = LETTERS.find((l) => l.letter === letter);
-  return found ? `${letter} ${ipaLabel(found.ipa)}` : letter;
-};
 
 const SPEED_LETTERS = new Set([...speedPool('vowels', true), ...speedPool('consonants', false)]);
 
