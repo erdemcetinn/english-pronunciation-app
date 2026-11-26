@@ -108,3 +108,37 @@ export function slugify(title) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 }
+
+/** Sentences longer than this are read in parts, as if they had a full stop. */
+export const MAX_SENTENCE_WORDS = 30;
+/** No part is shorter than this (avoids 2-word leftovers). */
+export const MIN_CHUNK_WORDS = 8;
+const NATURAL_BREAK = /[,;:—–)]$|-{2}$/;
+
+/** Splits one long word list at natural breaks (comma, semicolon, dash...), or at MAX words if there are none. */
+function chunkWords(words) {
+  const chunks = [];
+  let rest = words;
+  while (rest.length > MAX_SENTENCE_WORDS) {
+    // Latest natural break that leaves at least MIN words on both sides.
+    let cut = -1;
+    for (let i = MAX_SENTENCE_WORDS - 1; i >= MIN_CHUNK_WORDS - 1; i -= 1) {
+      if (NATURAL_BREAK.test(rest[i]) && rest.length - (i + 1) >= MIN_CHUNK_WORDS) {
+        cut = i + 1;
+        break;
+      }
+    }
+    if (cut === -1) cut = rest.length - MAX_SENTENCE_WORDS < MIN_CHUNK_WORDS ? rest.length - MIN_CHUNK_WORDS : MAX_SENTENCE_WORDS;
+    chunks.push(rest.slice(0, cut));
+    rest = rest.slice(cut);
+  }
+  return [...chunks, rest];
+}
+
+/** Breaks very long sentences into readable parts; short sentences stay as they are. */
+export function chunkLongSentences(sentences) {
+  return sentences.flatMap((sentence) => {
+    const words = sentence.split(' ');
+    return words.length <= MAX_SENTENCE_WORDS ? [sentence] : chunkWords(words).map((part) => part.join(' '));
+  });
+}

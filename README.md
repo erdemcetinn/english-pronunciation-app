@@ -9,7 +9,7 @@ Most learners stall at the same point: they know the words, but they can't hear 
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1f6f78">
   <img alt="Amazon Polly" src="https://img.shields.io/badge/Amazon%20Polly-10%20neural%20voices-c2622f">
   <img alt="AWS" src="https://img.shields.io/badge/S3%20%2B%20CloudFront-Terraform-7a4b9c">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-63%20passing-1f6f78">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-66%20passing-1f6f78">
 </p>
 
 > 🚧 In active development. Sound map, practice and three listening games and a spelling game work today. Type & Listen is next.
@@ -30,7 +30,7 @@ Most learners stall at the same point: they know the words, but they can't hear 
 
 **4. See where you're weak.** Every answer in the games is scored. Each sound gets a 0-100 score on the sound map (share of correct answers in your last 20, with the sound you mix it up with most), and a Letters view scores each letter name by speed and accuracy. Red, orange and green badges show what to practice next.
 
-**5. Read slowly, word by word.** Load any book (PDF) and read it one word at a time: each tap adds the next word, and a finished sentence clears for the next one. Your place is saved per book. A build script extracts the text, drops page numbers and running headers, re-joins hyphenated words and splits sentences.
+**5. Read slowly, word by word.** Load any book (PDF) and read it one word at a time: each tap adds the next word, and a finished sentence clears for the next one. Your place is saved per book. A build script extracts the text, drops page numbers and running headers, re-joins hyphenated words, splits sentences, and breaks very long ones at commas or dashes.
 
 **6. Hear many voices, not just one.** Every word is recorded by 10 natural American voices. In the games, voices rotate so you never hear the same speaker twice in a row. Hearing many different voices is one of the best-supported ways to train the ear ([HVPT research](https://www.cambridge.org/core/product/6ABB8C1F32D88D53EA8D05A4565E76F6/core-reader)). You can also choose one voice, a random voice, or your phone's built-in voice.
 

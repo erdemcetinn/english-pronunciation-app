@@ -9,7 +9,7 @@ import { parseArgs } from 'node:util';
 
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-import { cleanPages, slugify, splitSentences } from './lib/book-text.mjs';
+import { chunkLongSentences, cleanPages, slugify, splitSentences } from './lib/book-text.mjs';
 
 const OUT_DIR = new URL('../data/books/', import.meta.url);
 const PREVIEW_COUNT = 5;
@@ -52,7 +52,7 @@ async function readPages(path, from, to) {
 async function main() {
   const options = parseOptions();
   const { pages, totalPages, first, last } = await readPages(options.pdf, options.from, options.to);
-  const sentences = splitSentences(cleanPages(pages));
+  const sentences = chunkLongSentences(splitSentences(cleanPages(pages)));
   if (sentences.length === 0) throw new Error('No text found. Is the PDF a scan (images only)?');
 
   const id = slugify(options.title);

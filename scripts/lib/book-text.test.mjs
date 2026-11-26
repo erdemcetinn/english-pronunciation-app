@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { cleanPages, slugify, splitSentences } from './book-text.mjs';
+import { chunkLongSentences, cleanPages, MAX_SENTENCE_WORDS, MIN_CHUNK_WORDS, slugify, splitSentences } from './book-text.mjs';
 
 test('cleanPages drops page numbers and running headers, joins hyphenated words', () => {
   const pages = [
@@ -57,4 +57,27 @@ test('splitSentences treats headings (blank-line blocks) as their own sentence',
 
 test('slugify makes a safe id', () => {
   assert.equal(slugify("The Pilgrim's Progress: Part 1"), 'the-pilgrims-progress-part-1');
+});
+
+const words = (n, prefix = 'w') => Array.from({ length: n }, (_, i) => `${prefix}${i}`);
+
+test('chunkLongSentences leaves normal sentences alone', () => {
+  assert.deepEqual(chunkLongSentences(['A short one.', 'Another.']), ['A short one.', 'Another.']);
+});
+
+test('chunkLongSentences cuts a long sentence at a comma near the middle', () => {
+  const sentence = [...words(18, 'a'), 'end,', ...words(20, 'b'), 'stop.'].join(' ');
+  const chunks = chunkLongSentences([sentence]);
+  assert.equal(chunks.length, 2);
+  assert.ok(chunks[0].endsWith('end,'));
+  assert.ok(chunks[1].endsWith('stop.'));
+  assert.equal(chunks.join(' '), sentence);
+});
+
+test('chunkLongSentences cuts at MAX words when there is no punctuation, never leaves a tiny tail', () => {
+  const sentence = words(64).join(' ');
+  const chunks = chunkLongSentences([sentence]);
+  assert.ok(chunks.every((c) => c.split(' ').length <= MAX_SENTENCE_WORDS + MIN_CHUNK_WORDS));
+  assert.ok(chunks.every((c) => c.split(' ').length >= MIN_CHUNK_WORDS));
+  assert.equal(chunks.join(' '), sentence);
 });
