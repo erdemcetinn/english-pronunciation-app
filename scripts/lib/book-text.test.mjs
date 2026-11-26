@@ -71,6 +71,10 @@ test('cleanPages keeps two headings in a row apart', () => {
   assert.equal(cleanPages([['CHAPTER I', 'The Beginning', 'It began at night.']]), 'CHAPTER I\n\nThe Beginning\n\nIt began at night.');
 });
 
+test('cleanPages drops private-use bullet glyphs', () => {
+  assert.equal(cleanPages([['\uf0b7 to Share the work.']]), 'to Share the work.');
+});
+
 test('cleanPages normalizes ligatures and spaces', () => {
   assert.equal(cleanPages([['The  ﬁrst  oﬃce was here.']]), 'The first office was here.');
 });
@@ -89,6 +93,13 @@ test('splitSentences keeps "Black Dog!" said he. together', () => {
     '“Black Dog!” said he.',
     '“And who else?” returned the other.',
     'It was late.',
+  ]);
+});
+
+test('splitSentences keeps "(back then!) took me" and "H. Beam Piper" together', () => {
+  assert.deepEqual(splitSentences('Tanya (yes, that Tanya, back then!) took me to H. Beam Piper. It worked.'), [
+    'Tanya (yes, that Tanya, back then!) took me to H. Beam Piper.',
+    'It worked.',
   ]);
 });
 

@@ -9,7 +9,7 @@ Most learners stall at the same point: they know the words, but they can't hear 
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1f6f78">
   <img alt="Amazon Polly" src="https://img.shields.io/badge/Amazon%20Polly-10%20neural%20voices-c2622f">
   <img alt="AWS" src="https://img.shields.io/badge/S3%20%2B%20CloudFront-Terraform-7a4b9c">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-72%20passing-1f6f78">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-74%20passing-1f6f78">
 </p>
 
 > 🚧 In active development. Sound map, practice and three listening games and a spelling game work today. Type & Listen is next.

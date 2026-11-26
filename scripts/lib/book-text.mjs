@@ -9,14 +9,17 @@ const MIN_REPEATED_EDGE_PAGES = 3;
 const HEADING_MAX_LENGTH = 60;
 const ENDS_SENTENCE_OR_CLAUSE = /[.!?:;,"'”’)\]]$/;
 const PAGE_NUMBER = /^(page\s*)?[\divxlc]+$/i;
-/** A quoted question or exclamation: "Black Dog!" */
-const QUOTE_END = /[?!]["'”’]$/;
+/** Ends in ? or !, maybe inside quotes or brackets: "Black Dog!" / (back then!) */
+const QUOTE_END = /[?!]["'”’)\]]*$/;
 const ABBREVIATIONS = /\b(Mr|Mrs|Ms|Dr|St|Prof|Sr|Jr|vs|etc|e\.g|i\.e|No|Vol|Ch|Fig|Mt)\.$/i;
+/** A single capital initial like the H. in "H. Beam Piper". */
+const INITIAL = /(^|\s)[A-Z]\.$/;
 
-/** NFKC (ligatures), single spaces, and "sea- chest" -> "sea-chest". */
+/** NFKC (ligatures), no private-use glyphs, single spaces, and "sea- chest" -> "sea-chest". */
 const normalize = (line) =>
   line
     .normalize('NFKC')
+    .replace(/[\uE000-\uF8FF]/g, '') // private-use glyphs (PDF bullet symbols)
     .replace(/\s+/g, ' ')
     .replace(/([a-z])- ([a-z])/g, '$1-$2')
     .trim();
@@ -106,14 +109,14 @@ export function splitSentences(text) {
     for (const { segment } of segmenter.segment(block.replace(/\s+/g, ' ').trim())) {
       const part = segment.trim();
       if (!part) continue;
-      // "Black Dog!" said he. -> one sentence (a quote ending in ? or ! followed by lowercase text).
-      const previous = sentences[sentences.length - 1];
+      // "Black Dog!" said he. -> one sentence (? or ! followed by lowercase text did not end the sentence).
+      const previous = sentences.at(-1);
       if (!pending && /^[a-z]/.test(part) && previous && QUOTE_END.test(previous)) {
-        sentences[sentences.length - 1] = `${previous} ${part}`;
-        continue;
+        sentences.pop();
+        pending = previous;
       }
       pending = pending ? `${pending} ${part}` : part;
-      if (!ABBREVIATIONS.test(pending)) {
+      if (!ABBREVIATIONS.test(pending) && !INITIAL.test(pending)) {
         sentences.push(pending);
         pending = '';
       }
