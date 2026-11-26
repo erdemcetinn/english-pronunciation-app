@@ -11,13 +11,13 @@ interface ScoreTileProps {
   subtitle: string;
   score: number | null;
   attemptCount: number;
-  /** Red dot top right, e.g. a sound that doesn't exist in Turkish. */
+  /** Red dot top left, e.g. a sound that doesn't exist in Turkish. */
   hasDot?: boolean;
   onPress: () => void;
   accessibilityLabel: string;
 }
 
-/** Square tile for a sound or a letter, with its score badge in the top left corner. */
+/** Square tile for a sound or a letter, with its score badge in the top right corner. */
 export function ScoreTile({ title, subtitle, score, attemptCount, hasDot = false, onPress, accessibilityLabel }: ScoreTileProps) {
   const colors = useTheme();
   return (
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.xs,
   },
-  badge: { position: 'absolute', top: 4, left: 4 },
-  dot: { position: 'absolute', top: Spacing.sm, right: Spacing.sm, width: 6, height: 6, borderRadius: 3 },
+  badge: { position: 'absolute', top: 4, right: 4 },
+  dot: { position: 'absolute', top: Spacing.sm, left: Spacing.sm, width: 6, height: 6, borderRadius: 3 },
   title: { fontSize: 26, fontWeight: '600' },
   subtitle: { fontSize: 12 },
 });

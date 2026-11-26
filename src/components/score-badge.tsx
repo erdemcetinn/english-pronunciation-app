@@ -10,7 +10,7 @@ interface ScoreBadgeProps {
   attemptCount: number;
 }
 
-/** Colored score pill, or "2/5" progress until there are enough answers. Nothing before the first answer. */
+/** Colored "67/100" score pill, or "2/5" progress until there are enough answers. Nothing before the first answer. */
 export function ScoreBadge({ score, attemptCount }: ScoreBadgeProps) {
   const colors = useTheme();
   if (score === null) {
@@ -23,13 +23,13 @@ export function ScoreBadge({ score, attemptCount }: ScoreBadgeProps) {
   }
   return (
     <View style={[styles.pill, { backgroundColor: scoreColor(score, colors) }]}>
-      <Text style={styles.pillText}>{score}</Text>
+      <Text style={styles.pillText}>{score}/100</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   progress: { fontSize: 10, fontWeight: '600' },
-  pill: { borderRadius: Radius.md, paddingHorizontal: 5, paddingVertical: 1, minWidth: 22, alignItems: 'center' },
-  pillText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
+  pill: { borderRadius: Radius.md, paddingHorizontal: 4, paddingVertical: 1, alignItems: 'center' },
+  pillText: { color: '#FFFFFF', fontSize: 10, fontWeight: '700' },
 });
