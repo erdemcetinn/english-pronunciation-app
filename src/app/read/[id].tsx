@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -15,6 +15,15 @@ import {
   type ReaderPosition,
 } from '@/lib/reader';
 
+/** The text box keeps this share of the screen, so Back/Next never move however long the sentence. */
+const TEXT_BOX_SHARE = 0.45;
+
+/** Smaller type for long sentences, so more of the sentence fits in the box. */
+function fontSizeFor(wordCount: number): number {
+  if (wordCount <= 25) return 30;
+  return wordCount <= 50 ? 25 : 21;
+}
+
 type LoadState = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; book: Book };
 
 export default function ReaderScreen() {
@@ -22,6 +31,13 @@ export default function ReaderScreen() {
   const colors = useTheme();
   const [load, setLoad] = useState<LoadState>({ status: 'loading' });
   const [pos, setPos] = useState<ReaderPosition>(START);
+  const { height } = useWindowDimensions();
+  const textScroll = useRef<ComponentRef<typeof ScrollView>>(null);
+
+  // Keep the newest word in view when a sentence is longer than the box.
+  useEffect(() => {
+    textScroll.current?.scrollToEnd({ animated: true });
+  }, [pos]);
 
   const book = load.status === 'ready' ? load.book : null;
   const sentenceWords = useMemo(() => book?.sentences.map(wordsOf) ?? [], [book]);
@@ -63,7 +79,9 @@ export default function ReaderScreen() {
     );
   }
 
-  const shownText = sentenceWords[pos.sentence].slice(0, pos.shown).join(' ');
+  const words = sentenceWords[pos.sentence];
+  const shownText = words.slice(0, pos.shown).join(' ');
+  const fontSize = fontSizeFor(words.length);
   const isDone = isFinished(pos, lengths);
   const goNext = () => move(nextPosition(pos, lengths));
 
@@ -77,10 +95,15 @@ export default function ReaderScreen() {
         {progressPercent(pos, lengths.length)}% · sentence {pos.sentence + 1} of {lengths.length.toLocaleString('en-US')}
       </Text>
 
-      {/* Tapping the text works like Next, so you can read with one thumb. */}
-      <Pressable onPress={goNext} style={styles.textArea} accessibilityLabel="Next word">
-        <Text style={[styles.text, { color: colors.text }]}>{shownText}</Text>
-      </Pressable>
+      <ScrollView
+        ref={textScroll}
+        style={{ height: height * TEXT_BOX_SHARE }}
+        contentContainerStyle={styles.textContent}>
+        {/* Tapping the text works like Next, so you can read with one thumb. */}
+        <Pressable onPress={goNext} accessibilityLabel="Next word">
+          <Text style={[styles.text, { color: colors.text, fontSize, lineHeight: fontSize * 1.4 }]}>{shownText}</Text>
+        </Pressable>
+      </ScrollView>
 
       {isDone && <Text style={[styles.done, { color: colors.textSecondary }]}>The end.</Text>}
 
@@ -108,10 +131,10 @@ export default function ReaderScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: Spacing.lg },
-  container: { flexGrow: 1, padding: Spacing.lg, gap: Spacing.lg },
+  container: { padding: Spacing.lg, gap: Spacing.lg },
   progress: { fontSize: 13, textAlign: 'center' },
-  textArea: { flexGrow: 1, minHeight: 260, justifyContent: 'center' },
-  text: { fontSize: 30, lineHeight: 42, fontWeight: '500' },
+  textContent: { flexGrow: 1, justifyContent: 'center' },
+  text: { fontWeight: '500' },
   done: { textAlign: 'center', fontSize: 16 },
   buttons: { flexDirection: 'row', gap: Spacing.sm },
   back: { flex: 1, paddingVertical: Spacing.lg, borderRadius: Radius.lg, alignItems: 'center' },

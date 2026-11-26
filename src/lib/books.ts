@@ -65,6 +65,8 @@ async function fetchCatalogUncached(): Promise<BookEntry[]> {
   try {
     if (!BASE_URL) throw new Error('EXPO_PUBLIC_AUDIO_BASE_URL is not set');
     const response = await fetch(`${BASE_URL}/${KEY_PREFIX}/index.json`);
+    // No list uploaded yet: the private bucket answers 403 (or 404), which means "no books", not a network problem.
+    if (response.status === 403 || response.status === 404) return [];
     if (!response.ok) throw new Error(`Book list request failed: ${response.status}`);
     const text = await response.text();
     const parsed: unknown = JSON.parse(text);

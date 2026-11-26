@@ -3,6 +3,8 @@
 /** A line seen on at least this share of pages (and 3+ pages) is a running header or footer. */
 const REPEATED_LINE_SHARE = 0.3;
 const MIN_REPEATED_PAGES = 3;
+/** First/last lines of a page repeating on this many pages are headers (e.g. alternating chapter titles). */
+const MIN_REPEATED_EDGE_PAGES = 3;
 /** Short lines without end punctuation are treated as headings. */
 const HEADING_MAX_LENGTH = 60;
 const ENDS_SENTENCE_OR_CLAUSE = /[.!?:;,"'”’)\]]$/;
@@ -11,13 +13,27 @@ const ABBREVIATIONS = /\b(Mr|Mrs|Ms|Dr|St|Prof|Sr|Jr|vs|etc|e\.g|i\.e|No|Vol|Ch|
 
 const normalize = (line) => line.normalize('NFKC').replace(/\s+/g, ' ').trim();
 
-function repeatedLines(pages) {
+function countPages(linesPerPage) {
   const pagesWithLine = new Map();
-  for (const lines of pages) {
+  for (const lines of linesPerPage) {
     for (const line of new Set(lines)) pagesWithLine.set(line, (pagesWithLine.get(line) ?? 0) + 1);
   }
-  const threshold = Math.max(MIN_REPEATED_PAGES, pages.length * REPEATED_LINE_SHARE);
-  return new Set([...pagesWithLine].filter(([, count]) => count >= threshold).map(([line]) => line));
+  return pagesWithLine;
+}
+
+const linesSeenOn = (counts, minPages) =>
+  new Set([...counts].filter(([, count]) => count >= minPages).map(([line]) => line));
+
+const edgeLines = (lines) => (lines.length <= 1 ? lines : [lines[0], lines[lines.length - 1]]);
+
+/** Lines to drop from one page: page numbers and repeated headers/footers at the top or bottom. */
+function pageBody(lines, repeatedAnywhere, repeatedAtEdge) {
+  const lastIndex = lines.length - 1;
+  return lines.filter((line, index) => {
+    if (repeatedAnywhere.has(line)) return false;
+    const isEdge = index === 0 || index === lastIndex;
+    return !(isEdge && (PAGE_NUMBER.test(line) || repeatedAtEdge.has(line)));
+  });
 }
 
 /** Share of words that must start with a capital or digit for a line to look like a heading. */
@@ -43,8 +59,12 @@ const isHeading = (line, textSoFar) =>
  */
 export function cleanPages(pages) {
   const normalized = pages.map((lines) => lines.map(normalize).filter(Boolean));
-  const headers = repeatedLines(normalized);
-  const lines = normalized.flat().filter((line) => !headers.has(line) && !PAGE_NUMBER.test(line));
+  const repeatedAnywhere = linesSeenOn(
+    countPages(normalized),
+    Math.max(MIN_REPEATED_PAGES, normalized.length * REPEATED_LINE_SHARE),
+  );
+  const repeatedAtEdge = linesSeenOn(countPages(normalized.map(edgeLines)), MIN_REPEATED_EDGE_PAGES);
+  const lines = normalized.flatMap((page) => pageBody(page, repeatedAnywhere, repeatedAtEdge));
 
   let text = '';
   for (const line of lines) {

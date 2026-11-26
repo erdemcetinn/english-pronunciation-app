@@ -12,6 +12,19 @@ test('cleanPages drops page numbers and running headers, joins hyphenated words'
   assert.equal(cleanPages(pages), 'It was a fine example of the art. She said it was good. Then they left.');
 });
 
+test('cleanPages keeps a lone "I" inside a page (only edge lines can be page numbers)', () => {
+  assert.equal(cleanPages([['Top line here.', 'Then he said that', 'I', 'was right.', '7']]), 'Top line here. Then he said that I was right.');
+});
+
+test('cleanPages drops alternating chapter headers that repeat at page edges', () => {
+  const pages = Array.from({ length: 18 }, (_, i) =>
+    i % 2 === 0 ? ['THE BOOK', `Line ${i} of the story,`] : [`CHAPTER ${Math.floor(i / 6) + 1}`, `more ${i} text,`],
+  );
+  const text = cleanPages(pages);
+  assert.ok(!text.includes('THE BOOK'));
+  assert.ok(!text.includes('CHAPTER'));
+});
+
 test('cleanPages keeps short headings as their own block', () => {
   const pages = [['Chapter One', 'It began at night.']];
   assert.equal(cleanPages(pages), 'Chapter One\n\nIt began at night.');
