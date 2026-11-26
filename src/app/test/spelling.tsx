@@ -13,7 +13,7 @@ import { useSeenWords } from '@/hooks/use-seen-words';
 import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { pickFresh } from '@/lib/pick-fresh';
-import { playLetter, playWord, prefetchWords } from '@/lib/play-word';
+import { playLetter, playWord, preloadClips, prefetchWords } from '@/lib/play-word';
 import type { SeenMap } from '@/lib/practice-session';
 import { checkSpelling, isSpellable, normalizeTyped, type SpellingResult } from '@/lib/spelling-game';
 import { VOICES, type VoiceMode } from '@/lib/voice-settings';
@@ -28,13 +28,14 @@ const SPELLABLE_WORDS = ALL_WORDS.filter((word) => isSpellable(word, WORD_LIMITS
 interface SpellingRound {
   word: string;
   /** One speaker spells the whole word, like a real person would. */
+  voiceId: string;
   voice: VoiceMode;
 }
 
 function newRound(seen: SeenMap): SpellingRound {
   const word = pickFresh(SPELLABLE_WORDS, seen, Math.random) ?? SPELLABLE_WORDS[0];
   const voiceId = VOICES[Math.floor(Math.random() * VOICES.length)].id;
-  return { word, voice: { kind: 'voice', voiceId } };
+  return { word, voiceId, voice: { kind: 'voice', voiceId } };
 }
 
 export default function SpellingScreen() {
@@ -56,11 +57,21 @@ export default function SpellingScreen() {
   }, [seen, round]);
 
   const { start } = sequence;
+  // Download every letter first, then spell: otherwise slow downloads bunch letters together.
   useEffect(() => {
     if (!round) return;
+    let isActive = true;
     markSeen(round.word);
-    prefetchWords([...letters.map((l) => getLetter(l).key), round.word], round.voice);
-    start(letters);
+    prefetchWords([round.word], round.voice);
+    void preloadClips(
+      letters.map((l) => getLetter(l).key),
+      round.voiceId,
+    ).then(() => {
+      if (isActive) start(letters);
+    });
+    return () => {
+      isActive = false;
+    };
   }, [round, letters, start, markSeen]);
 
   if (!round) return <View style={[styles.fill, { backgroundColor: colors.background }]} />;
@@ -77,6 +88,7 @@ export default function SpellingScreen() {
   };
 
   const goNext = () => {
+    sequence.stop();
     setRound(newRound(seen ?? {}));
     setTyped('');
     setResult(null);
@@ -126,6 +138,12 @@ export default function SpellingScreen() {
         ]}>
         <Text style={styles.actionText}>{result ? 'Next' : 'Check'}</Text>
       </Pressable>
+
+      {!result && (
+        <Pressable onPress={goNext} accessibilityLabel="Skip to the next word">
+          <Text style={[styles.replay, { color: colors.textSecondary }]}>Skip word ⏭</Text>
+        </Pressable>
+      )}
     </ScrollView>
   );
 }

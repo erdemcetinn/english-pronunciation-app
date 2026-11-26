@@ -15,6 +15,8 @@ const voiceBag = createVoiceBag(
 );
 /** Voice chosen ahead of time for a word (random mode), so prefetch and play agree. */
 const plannedVoices = new Map<string, string>();
+/** Increases on every play request; a download that finishes late must not play over a newer request. */
+let playToken = 0;
 
 function getPlayer(): AudioPlayer {
   if (!player) {
@@ -42,17 +44,19 @@ function stopAll(): void {
 /** Plays the clip `key`; the device voice says `spokenText` when Polly audio is off or fails. */
 async function playClip(key: string, spokenText: string, mode: VoiceMode): Promise<void> {
   stopAll();
+  const token = ++playToken;
   const voice = voiceFor(key, mode);
   if (!voice) return speakWord(spokenText);
 
   try {
     const uri = await getAudioUri(voice, key);
+    if (token !== playToken) return; // a newer clip was requested while this one downloaded
     const audio = getPlayer();
     audio.replace({ uri });
     audio.play();
   } catch (error) {
     console.warn(`Polly audio failed for ${voice}/${key}, using device voice`, error);
-    speakWord(spokenText);
+    if (token === playToken) speakWord(spokenText);
   }
 }
 
@@ -94,4 +98,10 @@ export function prefetchAllVoices(keys: readonly string[]): void {
       });
     }
   }
+}
+
+/** Resolves when the clips are on the phone (failures are skipped), so a timed sequence plays without gaps. */
+export async function preloadClips(keys: readonly string[], voiceId: string): Promise<void> {
+  if (!isRemoteAudioConfigured) return;
+  await Promise.allSettled(keys.map((key) => getAudioUri(voiceId, key)));
 }
