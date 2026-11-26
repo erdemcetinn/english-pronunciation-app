@@ -9,6 +9,7 @@ const GAMES: readonly { href: Href; title: string; description: string }[] = [
   { href: '/test/vowel', title: 'Find the vowel', description: 'Hear a word and fill in its missing vowel: /ʃ_p/' },
   { href: '/test/letters-speed', title: 'Letter names: speed', description: 'Hear A, E or I and tap the letter as fast as you can' },
   { href: '/test/letters-sound', title: 'Letter names: sound', description: 'See a letter and find how its name sounds' },
+  { href: '/test/spelling', title: 'Spelling', description: 'Hear a word spelled letter by letter and type it' },
 ];
 
 export default function TestMenuScreen() {

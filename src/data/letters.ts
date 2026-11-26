@@ -13,7 +13,8 @@ export const LETTERS: readonly LetterName[] = rawLetters;
 
 /** The three letters Turkish speakers mix up most: A says /eɪ/, E says /i/, I says /aɪ/. */
 export const CORE_LETTERS: readonly string[] = ['A', 'E', 'I'];
-export const ALL_LETTERS: readonly string[] = LETTERS.map((l) => l.letter);
+/** The vowel letters: the letter names game can extend from A, E, I to these. */
+export const VOWEL_LETTERS: readonly string[] = ['A', 'E', 'I', 'O', 'U'];
 
 const BY_LETTER = new Map(LETTERS.map((l) => [l.letter, l]));
 const BY_KEY = new Map(LETTERS.map((l) => [l.key, l]));

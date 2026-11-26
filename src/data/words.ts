@@ -16,3 +16,6 @@ export function getPracticeWords(phonemeId: string): readonly string[] {
 export function getIpaSegments(word: string): readonly string[] {
   return WORDS.ipa[word] ?? [];
 }
+
+/** Every word that has IPA (and therefore audio). */
+export const ALL_WORDS: readonly string[] = Object.keys(WORDS.ipa);

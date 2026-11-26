@@ -9,10 +9,10 @@ Most learners stall at the same point: they know the words, but they can't hear 
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1f6f78">
   <img alt="Amazon Polly" src="https://img.shields.io/badge/Amazon%20Polly-10%20neural%20voices-c2622f">
   <img alt="AWS" src="https://img.shields.io/badge/S3%20%2B%20CloudFront-Terraform-7a4b9c">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-35%20passing-1f6f78">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-38%20passing-1f6f78">
 </p>
 
-> 🚧 In active development. Sound map, practice and three listening games work today. Type & Listen is next.
+> 🚧 In active development. Sound map, practice and four listening games work today. Type & Listen is next.
 
 ---
 
@@ -26,6 +26,7 @@ Most learners stall at the same point: they know the words, but they can't hear 
 - **Word pairs:** hear a word, pick it: *ship* or *sheep*? *three* or *tree*? *van* or *fan*? 463 minimal pairs built around the contrasts learners mix up most.
 - **Find the vowel:** hear a word, see its IPA with the vowel missing (/ʃ _ p/), and choose between the sound and its two closest look-alikes.
 - **Letter names:** A says /eɪ/, E says /i/, I says /aɪ/, a classic trap for Turkish speakers when spelling names or emails. *Speed* mode plays a letter and times how fast you tap it. *Sound* mode shows a letter, reads three candidate names in order, and you pick the right one.
+- **Spelling:** a word is spelled out letter by letter, the way names and emails are dictated on the phone. You see one blank per letter and type what you heard.
 
 **4. Hear many voices, not just one.** Every word is recorded by 10 natural American voices. In the games, voices rotate so you never hear the same speaker twice in a row. Hearing many different voices is one of the best-supported ways to train the ear ([HVPT research](https://www.cambridge.org/core/product/6ABB8C1F32D88D53EA8D05A4565E76F6/core-reader)). You can also choose one voice, a random voice, or your phone's built-in voice.
 
@@ -74,7 +75,7 @@ CMU Pronouncing Dictionary + 10k most frequent English words
 - [x] Sound map with example words and IPA
 - [x] Practice mode with rotating word sets
 - [x] 10-voice audio on S3 + CloudFront
-- [x] Listening games: Word pairs, Find the vowel, Letter names
+- [x] Listening games: Word pairs, Find the vowel, Letter names, Spelling
 - [ ] Type & Listen: type any sentence, hear it, see the IPA (Lambda + Polly)
 - [ ] Listening in context: fast speech and words inside sentences
 - [ ] Progress tracking: the contrasts you miss most come back more often
