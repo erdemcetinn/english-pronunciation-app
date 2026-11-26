@@ -1,8 +1,16 @@
-import { CORE_LETTERS, getLetter, VOWEL_LETTERS } from '@/data/letters';
+import { CONSONANT_SET_LETTERS, CORE_LETTERS, getLetter, VOWEL_LETTERS } from '@/data/letters';
 
-/** Clips the letter names game uses (vowel letters only). */
-export const LETTER_KEYS = VOWEL_LETTERS.map((l) => getLetter(l).key);
+export const letterKeys = (letters: readonly string[]) => letters.map((l) => getLetter(l).key);
+
+/** Clips the letter names sound mode uses (vowel letters only). */
+export const LETTER_KEYS = letterKeys(VOWEL_LETTERS);
 export const EXTEND_LABEL = '+ O, U';
 
 export const letterPool = (isExtended: boolean) => (isExtended ? VOWEL_LETTERS : CORE_LETTERS);
 export const ipaLabel = (ipa: readonly string[]) => `/${ipa.join('')}/`;
+
+/** Speed game modes: the A/E/I(/O/U) vowels, or a wider set of mostly consonant letters. */
+export type LetterSet = 'vowels' | 'consonants';
+
+export const speedPool = (set: LetterSet, isExtended: boolean) =>
+  set === 'vowels' ? letterPool(isExtended) : CONSONANT_SET_LETTERS;

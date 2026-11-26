@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
 import { SUCCESS_COLOR } from '@/constants/game';
 import { Radius, Spacing } from '@/constants/theme';
@@ -15,10 +15,22 @@ interface LetterOptionProps {
   accessibilityLabel: string;
   /** True while this option's sound is playing in the auto sequence. */
   isPlaying?: boolean;
+  /** Smaller tile for big letter grids. */
+  isCompact?: boolean;
+  style?: ViewStyle;
 }
 
 /** A big tappable answer: a letter (speed mode) or a sound button (sound mode). */
-export function LetterOption({ title, subtitle, state, onPress, accessibilityLabel, isPlaying = false }: LetterOptionProps) {
+export function LetterOption({
+  title,
+  subtitle,
+  state,
+  onPress,
+  accessibilityLabel,
+  isPlaying = false,
+  isCompact = false,
+  style,
+}: LetterOptionProps) {
   const colors = useTheme();
   const borderColor = {
     idle: 'transparent',
@@ -35,9 +47,11 @@ export function LetterOption({ title, subtitle, state, onPress, accessibilityLab
       accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [
         styles.option,
+        isCompact && styles.compact,
         { backgroundColor: backgroundColor(pressed), borderColor: isPlaying ? colors.accent : borderColor },
+        style,
       ]}>
-      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.title, isCompact && styles.compactTitle, { color: colors.text }]}>{title}</Text>
       {subtitle && <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{subtitle}</Text>}
     </Pressable>
   );
@@ -54,6 +68,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     padding: Spacing.sm,
   },
+  compact: { minHeight: 64 },
   title: { fontSize: 40, fontWeight: '700' },
+  compactTitle: { fontSize: 28 },
   subtitle: { fontSize: 20 },
 });

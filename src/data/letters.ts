@@ -28,3 +28,6 @@ export function getLetter(letter: string): LetterName {
 export function getLetterSegmentsByKey(key: string): readonly string[] {
   return BY_KEY.get(key)?.ipa ?? [];
 }
+
+/** Letters whose English names Turkish speakers often get wrong (C /si/, G /dʒi/, J /dʒeɪ/, R /ɑr/, Y /waɪ/...), alphabetical. */
+export const CONSONANT_SET_LETTERS: readonly string[] = ['B', 'C', 'D', 'F', 'G', 'J', 'M', 'N', 'P', 'R', 'S', 'U', 'V', 'Y'];

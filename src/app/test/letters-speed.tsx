@@ -6,7 +6,7 @@ import { ListenButton } from '@/components/listen-button';
 import { ScoreHeader } from '@/components/score-header';
 import { ToggleChip } from '@/components/toggle-chip';
 import { GAME_VOICES, SUCCESS_COLOR } from '@/constants/game';
-import { EXTEND_LABEL, ipaLabel, LETTER_KEYS, letterPool } from '@/constants/letters-game';
+import { EXTEND_LABEL, ipaLabel, letterKeys, speedPool, type LetterSet } from '@/constants/letters-game';
 import { Spacing } from '@/constants/theme';
 import { getLetter } from '@/data/letters';
 import { useTheme } from '@/hooks/use-theme';
@@ -21,6 +21,15 @@ const NEXT_DELAY_WRONG_MS = 1800;
 const newRound = (pool: readonly string[]): LetterRound =>
   nextLetterRound({ pool, optionCount: pool.length, shuffle: shuffled, random: Math.random });
 
+/** Pools larger than this are shown as a grid of smaller tiles. */
+const ROW_MAX = 5;
+const GRID_TILE_WIDTH = '18%';
+
+const SET_CHIPS: readonly { set: LetterSet; label: string }[] = [
+  { set: 'vowels', label: 'A E I' },
+  { set: 'consonants', label: 'B C D G J R Y…' },
+];
+
 const formatSeconds = (ms: number | null) => (ms === null ? '-' : `${(ms / 1000).toFixed(2)} s`);
 
 function optionState(letter: string, round: LetterRound, answer: string | null): LetterOptionState {
@@ -31,8 +40,10 @@ function optionState(letter: string, round: LetterRound, answer: string | null):
 
 export default function LetterSpeedScreen() {
   const colors = useTheme();
+  const [letterSet, setLetterSet] = useState<LetterSet>('vowels');
   const [isExtended, setIsExtended] = useState(false);
-  const pool = letterPool(isExtended);
+  const pool = speedPool(letterSet, isExtended);
+  const isGrid = pool.length > ROW_MAX;
   const [round, setRound] = useState(() => newRound(pool));
   const [answer, setAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
@@ -40,7 +51,7 @@ export default function LetterSpeedScreen() {
   const [lastTime, setLastTime] = useState<number | null>(null);
   const startedAt = useRef<number | null>(null);
 
-  useEffect(() => prefetchAllVoices(LETTER_KEYS), []);
+  useEffect(() => prefetchAllVoices(letterKeys(pool)), [pool]);
 
   // Play the letter; the clock starts once playback has started.
   useEffect(() => {
@@ -76,11 +87,15 @@ export default function LetterSpeedScreen() {
     if (!isCorrect) void playLetter(round.target, GAME_VOICES);
   };
 
-  const toggleExtended = () => {
-    const nextPool = letterPool(!isExtended);
-    setIsExtended(!isExtended);
-    setRound(newRound(nextPool));
+  /** Switching letters starts fresh: times from different sets aren't comparable. */
+  const restart = (set: LetterSet, extended: boolean) => {
+    setLetterSet(set);
+    setIsExtended(extended);
+    setRound(newRound(speedPool(set, extended)));
     setAnswer(null);
+    setScore(INITIAL_SCORE);
+    setTimes([]);
+    setLastTime(null);
   };
 
   const { average, best } = summarizeTimes(times);
@@ -92,7 +107,12 @@ export default function LetterSpeedScreen() {
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.container}>
       <View style={styles.topRow}>
-        <ToggleChip label={EXTEND_LABEL} isOn={isExtended} onToggle={toggleExtended} />
+        {SET_CHIPS.map(({ set, label }) => (
+          <ToggleChip key={set} label={label} isOn={letterSet === set} onToggle={() => set !== letterSet && restart(set, false)} />
+        ))}
+        {letterSet === 'vowels' && (
+          <ToggleChip label={EXTEND_LABEL} isOn={isExtended} onToggle={() => restart('vowels', !isExtended)} />
+        )}
       </View>
       <ScoreHeader score={score} />
       <Text style={[styles.times, { color: colors.textSecondary }]}>
@@ -103,11 +123,13 @@ export default function LetterSpeedScreen() {
 
       <Text style={[styles.question, { color: colors.text }]}>Which letter? Be quick!</Text>
 
-      <View style={styles.options}>
+      <View style={[styles.options, isGrid && styles.grid]}>
         {pool.map((letter) => (
           <LetterOption
             key={letter}
             title={letter}
+            isCompact={isGrid}
+            style={isGrid ? styles.gridTile : undefined}
             state={optionState(letter, round, answer)}
             onPress={() => choose(letter)}
             accessibilityLabel={`Choose ${letter}`}
@@ -124,9 +146,11 @@ export default function LetterSpeedScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: Spacing.lg, gap: Spacing.lg },
-  topRow: { flexDirection: 'row', justifyContent: 'flex-end' },
+  topRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: Spacing.sm },
   times: { fontSize: 14, textAlign: 'center' },
   question: { textAlign: 'center', fontSize: 18, fontWeight: '600' },
   options: { flexDirection: 'row', gap: Spacing.sm },
+  grid: { flexWrap: 'wrap', justifyContent: 'center' },
+  gridTile: { flex: 0, width: GRID_TILE_WIDTH },
   feedback: { textAlign: 'center', fontSize: 20, fontWeight: '700' },
 });
