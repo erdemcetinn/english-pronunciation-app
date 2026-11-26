@@ -123,7 +123,7 @@ export default function LetterSoundScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, gap: Spacing.lg },
+  container: { padding: Spacing.lg, gap: Spacing.lg },
   topRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   letter: { fontSize: 96, fontWeight: '800', textAlign: 'center' },
   question: { textAlign: 'center', fontSize: 16 },

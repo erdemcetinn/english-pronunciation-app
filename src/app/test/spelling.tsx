@@ -21,6 +21,8 @@ import { VOICES, type VoiceMode } from '@/lib/voice-settings';
 const SEEN_LIST_ID = 'game-spelling';
 const WORD_LIMITS = { minLength: 3, maxLength: 7 };
 const SPELL_STEP_MS = 900;
+/** Extra bottom space: keeps the content centered but a little above the middle. */
+const LIFT = 96;
 const SPELLABLE_WORDS = ALL_WORDS.filter((word) => isSpellable(word, WORD_LIMITS));
 
 interface SpellingRound {
@@ -130,7 +132,7 @@ export default function SpellingScreen() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, gap: Spacing.lg },
+  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingBottom: Spacing.lg + LIFT, gap: Spacing.lg },
   question: { textAlign: 'center', fontSize: 16 },
   replay: { textAlign: 'center', fontSize: 16, fontWeight: '600' },
   answer: { alignItems: 'center', gap: Spacing.xs },

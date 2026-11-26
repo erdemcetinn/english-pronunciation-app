@@ -123,7 +123,7 @@ export default function LetterSpeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, gap: Spacing.lg },
+  container: { padding: Spacing.lg, gap: Spacing.lg },
   topRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   times: { fontSize: 14, textAlign: 'center' },
   question: { textAlign: 'center', fontSize: 18, fontWeight: '600' },
