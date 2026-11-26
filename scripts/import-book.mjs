@@ -4,12 +4,13 @@
 // Usage:
 //   node scripts/import-book.mjs --pdf <file.pdf> --title "Title" [--author "Name"] [--from 5] [--to 300]
 //   --from / --to: page range to keep (skip cover, contents, index...).
+//   --start-at "text": start at the first line containing this text (when the book starts mid-page).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-import { chunkLongSentences, cleanPages, slugify, splitSentences } from './lib/book-text.mjs';
+import { chunkLongSentences, cleanPages, slugify, splitSentences, startAtLine } from './lib/book-text.mjs';
 
 const OUT_DIR = new URL('../data/books/', import.meta.url);
 const PREVIEW_COUNT = 5;
@@ -22,11 +23,12 @@ function parseOptions() {
       author: { type: 'string' },
       from: { type: 'string' },
       to: { type: 'string' },
+      'start-at': { type: 'string' },
     },
   });
   if (!values.pdf || !values.title) throw new Error('Usage: --pdf <file.pdf> --title "Title" [--author] [--from] [--to]');
   const toPage = (value) => (value === undefined ? undefined : Number.parseInt(value, 10));
-  return { ...values, from: toPage(values.from), to: toPage(values.to) };
+  return { ...values, from: toPage(values.from), to: toPage(values.to), startAt: values['start-at'] };
 }
 
 /** Lines of text per page, in reading order as pdf.js reports them. */
@@ -51,7 +53,8 @@ async function readPages(path, from, to) {
 
 async function main() {
   const options = parseOptions();
-  const { pages, totalPages, first, last } = await readPages(options.pdf, options.from, options.to);
+  const { pages: allPages, totalPages, first, last } = await readPages(options.pdf, options.from, options.to);
+  const pages = options.startAt ? startAtLine(allPages, options.startAt) : allPages;
   const sentences = chunkLongSentences(splitSentences(cleanPages(pages)));
   if (sentences.length === 0) throw new Error('No text found. Is the PDF a scan (images only)?');
 

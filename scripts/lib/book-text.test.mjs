@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { chunkLongSentences, cleanPages, MAX_SENTENCE_WORDS, MIN_CHUNK_WORDS, slugify, splitSentences } from './book-text.mjs';
+import {
+  chunkLongSentences,
+  cleanPages,
+  MAX_SENTENCE_WORDS,
+  MIN_CHUNK_WORDS,
+  slugify,
+  splitSentences,
+  startAtLine,
+} from './book-text.mjs';
 
 test('cleanPages drops page numbers and running headers, joins hyphenated words', () => {
   const pages = [
@@ -25,6 +33,35 @@ test('cleanPages drops alternating chapter headers that repeat at page edges', (
   assert.ok(!text.includes('CHAPTER'));
 });
 
+test('cleanPages drops numbered footers like "Title Page 2/142"', () => {
+  const pages = [2, 3, 4].map((n) => [`Line on page ${n} goes on,`, `Treasure Island Page ${n}/142`]);
+  assert.ok(!cleanPages(pages).includes('Treasure Island Page'));
+});
+
+test('cleanPages fixes "sea- chest" and keeps Chapter lines ending in a quote as headings', () => {
+  assert.equal(
+    cleanPages([["Chapter I - At the 'Admiral Benbow'", 'His sea- chest was here.']]),
+    "Chapter I - At the 'Admiral Benbow'\n\nHis sea-chest was here.",
+  );
+});
+
+test('a heading after "party.)" is still a heading', () => {
+  assert.equal(
+    cleanPages([['known by the party.)', 'Part V. My Sea Adventure', 'Chapter XXII - How It Began', 'There was no return.']]),
+    'known by the party.)\n\nPart V. My Sea Adventure\n\nChapter XXII - How It Began\n\nThere was no return.',
+  );
+});
+
+test('a sentence starting with "Part of" is not a heading', () => {
+  assert.equal(cleanPages([['It ended.', 'Part of the crew', 'stayed behind.']]), 'It ended. Part of the crew stayed behind.');
+});
+
+test('startAtLine drops everything before the marker line', () => {
+  assert.deepEqual(startAtLine([['Contents', 'Part One 2'], ['x', 'Part One. Start', 'Text.']], 'Part One. Start'), [
+    ['Part One. Start', 'Text.'],
+  ]);
+});
+
 test('cleanPages keeps short headings as their own block', () => {
   const pages = [['Chapter One', 'It began at night.']];
   assert.equal(cleanPages(pages), 'Chapter One\n\nIt began at night.');
@@ -44,6 +81,14 @@ test('splitSentences splits on sentence ends but not after Mr./Dr.', () => {
     'They talked!',
     'Did it work?',
     'Yes.',
+  ]);
+});
+
+test('splitSentences keeps "Black Dog!" said he. together', () => {
+  assert.deepEqual(splitSentences('“Black Dog!” said he. “And who else?” returned the other. It was late.'), [
+    '“Black Dog!” said he.',
+    '“And who else?” returned the other.',
+    'It was late.',
   ]);
 });
 

@@ -9,9 +9,20 @@ const MIN_REPEATED_EDGE_PAGES = 3;
 const HEADING_MAX_LENGTH = 60;
 const ENDS_SENTENCE_OR_CLAUSE = /[.!?:;,"'”’)\]]$/;
 const PAGE_NUMBER = /^(page\s*)?[\divxlc]+$/i;
+/** A quoted question or exclamation: "Black Dog!" */
+const QUOTE_END = /[?!]["'”’]$/;
 const ABBREVIATIONS = /\b(Mr|Mrs|Ms|Dr|St|Prof|Sr|Jr|vs|etc|e\.g|i\.e|No|Vol|Ch|Fig|Mt)\.$/i;
 
-const normalize = (line) => line.normalize('NFKC').replace(/\s+/g, ' ').trim();
+/** NFKC (ligatures), single spaces, and "sea- chest" -> "sea-chest". */
+const normalize = (line) =>
+  line
+    .normalize('NFKC')
+    .replace(/\s+/g, ' ')
+    .replace(/([a-z])- ([a-z])/g, '$1-$2')
+    .trim();
+
+/** Footers like "Book Title Page 2/142" differ only in numbers: compare them with digits masked. */
+const withoutDigits = (line) => line.replace(/\d+/g, '#');
 
 function countPages(linesPerPage) {
   const pagesWithLine = new Map();
@@ -24,7 +35,7 @@ function countPages(linesPerPage) {
 const linesSeenOn = (counts, minPages) =>
   new Set([...counts].filter(([, count]) => count >= minPages).map(([line]) => line));
 
-const edgeLines = (lines) => (lines.length <= 1 ? lines : [lines[0], lines[lines.length - 1]]);
+const edgeLines = (lines) => (lines.length <= 1 ? lines : [lines[0], lines[lines.length - 1]]).map(withoutDigits);
 
 /** Lines to drop from one page: page numbers and repeated headers/footers at the top or bottom. */
 function pageBody(lines, repeatedAnywhere, repeatedAtEdge) {
@@ -32,7 +43,7 @@ function pageBody(lines, repeatedAnywhere, repeatedAtEdge) {
   return lines.filter((line, index) => {
     if (repeatedAnywhere.has(line)) return false;
     const isEdge = index === 0 || index === lastIndex;
-    return !(isEdge && (PAGE_NUMBER.test(line) || repeatedAtEdge.has(line)));
+    return !(isEdge && (PAGE_NUMBER.test(line) || repeatedAtEdge.has(withoutDigits(line))));
   });
 }
 
@@ -44,13 +55,20 @@ const isTitleLike = (line) => {
   return words.filter((w) => /^[\p{Lu}\d]/u.test(w)).length / words.length >= HEADING_CAPITALIZED_SHARE;
 };
 
-/** "Chapter One": short, title-like, no end punctuation, and the text before it finished a sentence. */
-const isHeading = (line, textSoFar) =>
-  line.length <= HEADING_MAX_LENGTH &&
-  !ENDS_SENTENCE_OR_CLAUSE.test(line) &&
-  !line.endsWith('-') &&
-  isTitleLike(line) &&
-  (textSoFar.trim() === '' || textSoFar.endsWith('\n') || /[.!?"'”’]$/.test(textSoFar.trim()));
+const EXPLICIT_HEADING =
+  /^(chapter|part|book)\s+([ivxlc]+|\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b/i;
+
+/**
+ * "Chapter One": short, title-like, no end punctuation, and the text before it finished a sentence.
+ * Lines starting with Chapter/Part/Book count even when they end in a quote ('Admiral Benbow').
+ */
+function isHeading(line, textSoFar) {
+  const isAfterSentence =
+    textSoFar.trim() === '' || textSoFar.endsWith('\n') || /[.!?]["'”’)\]]*$/.test(textSoFar.trim());
+  if (line.length > HEADING_MAX_LENGTH || line.endsWith('-') || !isAfterSentence) return false;
+  if (EXPLICIT_HEADING.test(line)) return true;
+  return !ENDS_SENTENCE_OR_CLAUSE.test(line) && isTitleLike(line);
+}
 
 /**
  * pages: string[][] (lines per page) -> one text.
@@ -88,6 +106,12 @@ export function splitSentences(text) {
     for (const { segment } of segmenter.segment(block.replace(/\s+/g, ' ').trim())) {
       const part = segment.trim();
       if (!part) continue;
+      // "Black Dog!" said he. -> one sentence (a quote ending in ? or ! followed by lowercase text).
+      const previous = sentences[sentences.length - 1];
+      if (!pending && /^[a-z]/.test(part) && previous && QUOTE_END.test(previous)) {
+        sentences[sentences.length - 1] = `${previous} ${part}`;
+        continue;
+      }
       pending = pending ? `${pending} ${part}` : part;
       if (!ABBREVIATIONS.test(pending)) {
         sentences.push(pending);
@@ -97,6 +121,14 @@ export function splitSentences(text) {
     if (pending) sentences.push(pending);
   }
   return sentences;
+}
+
+/** Drops everything before the first line containing `marker` (e.g. after a table of contents). */
+export function startAtLine(pages, marker) {
+  const pageIndex = pages.findIndex((lines) => lines.some((line) => line.includes(marker)));
+  if (pageIndex === -1) throw new Error(`--start-at text not found: "${marker}"`);
+  const lineIndex = pages[pageIndex].findIndex((line) => line.includes(marker));
+  return [pages[pageIndex].slice(lineIndex), ...pages.slice(pageIndex + 1)];
 }
 
 export function slugify(title) {
