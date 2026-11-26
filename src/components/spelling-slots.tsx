@@ -30,7 +30,10 @@ export function SpellingSlots({ length, picked, activeIndex, results, onDeleteLa
       <View style={styles.row}>
         {Array.from({ length }, (_, index) => (
           <View key={index} style={[styles.slot, { borderBottomColor: lineColor(index) }]}>
-            <Text style={[styles.letter, { color: colors.text }]}>{picked[index] ?? ''}</Text>
+            {/* Fixed width + remount per letter: iOS kept a stale zero width for the thin "I" */}
+            <Text key={picked[index] ?? 'empty'} style={[styles.letter, { color: colors.text }]}>
+              {picked[index] ?? ''}
+            </Text>
           </View>
         ))}
       </View>
@@ -41,5 +44,5 @@ export function SpellingSlots({ length, picked, activeIndex, results, onDeleteLa
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.sm },
   slot: { width: 36, height: 52, borderBottomWidth: 3, alignItems: 'center', justifyContent: 'flex-end' },
-  letter: { fontSize: 32, fontWeight: '700' },
+  letter: { width: '100%', textAlign: 'center', fontSize: 32, fontWeight: '700' },
 });
