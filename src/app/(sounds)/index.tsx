@@ -71,8 +71,8 @@ function LetterMap() {
   return (
     <>
       <Text style={[styles.legendText, { color: colors.textSecondary }]}>
-        How well you recognize letter names. Scores come from Letter names: speed and Spelling (80% speed, 20%
-        accuracy).
+        How well you recognize letter names, from Letter names: speed and Spelling. 80% speed + 20% accuracy once a
+        letter has 5 timed answers, accuracy only before that.
       </Text>
       <View style={styles.grid}>
         {LETTERS.map(({ letter, ipa }) => {

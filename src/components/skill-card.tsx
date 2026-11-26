@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { scoreColor } from '@/constants/score';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { averageCorrectMs, MIN_ATTEMPTS, topConfusion, WINDOW, type Attempt } from '@/lib/skill-score';
+import { averageCorrectMs, MIN_ATTEMPTS, topConfusion, type Attempt } from '@/lib/skill-score';
 
 interface SkillCardProps {
   score: number | null;
@@ -40,7 +40,7 @@ export function SkillCard({ score, attempts, labelFor, formula, sources }: Skill
       )}
       {attempts.length > 0 && (
         <Text style={[styles.line, muted]}>
-          Last {Math.min(attempts.length, WINDOW)} answers: {correct} correct
+          Recent answers: {correct} of {attempts.length} correct
           {averageMs !== null ? ` · avg ${(averageMs / 1000).toFixed(2)} s` : ''}
         </Text>
       )}

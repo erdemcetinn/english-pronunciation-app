@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
+  hasSpeedData,
   letterScore,
   MIN_ATTEMPTS,
   recordAttempt,
@@ -49,6 +50,21 @@ test('letterScore: 80% speed + 20% accuracy; wrong timed answers give 0 speed', 
 test('letterScore: accuracy only when there is no timed attempt (spelling)', () => {
   assert.equal(letterScore([right(), right(), right(), right(), wrong('E')]), 80);
   assert.equal(letterScore(times(MIN_ATTEMPTS - 1, () => right())), null);
+});
+
+test('recordAttempt: untimed spelling answers never push out timed speed answers', () => {
+  let log = {};
+  for (let i = 0; i < 5; i += 1) log = recordAttempt(log, 'R', right({ ms: 700 }));
+  for (let i = 0; i < 30; i += 1) log = recordAttempt(log, 'R', right());
+  const attempts = (log as Record<string, Attempt[]>).R;
+  assert.equal(attempts.filter((a) => a.ms !== undefined).length, 5);
+  assert.equal(attempts.filter((a) => a.ms === undefined).length, WINDOW);
+  assert.equal(hasSpeedData(attempts), true);
+});
+
+test('letterScore: one slow timed answer does not wreck a spelling-only score', () => {
+  const attempts = [...times(10, () => right()), right({ ms: 2600 })];
+  assert.equal(letterScore(attempts), 100);
 });
 
 test('topConfusion: the most frequent wrong choice', () => {

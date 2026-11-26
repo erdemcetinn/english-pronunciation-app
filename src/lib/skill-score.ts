@@ -22,9 +22,20 @@ const SLOW_MS = 2500;
 const GOOD_SCORE = 85;
 const OK_SCORE = 60;
 
+const isTimed = (a: Attempt) => a.ms !== undefined;
+
+/**
+ * Appends an answer, keeping the last WINDOW timed and the last WINDOW untimed answers separately,
+ * so many untimed spelling answers can't push the speed answers out.
+ */
 export function recordAttempt(log: AttemptLog, id: string, attempt: Attempt): AttemptLog {
-  return { ...log, [id]: [...(log[id] ?? []), attempt].slice(-WINDOW) };
+  const all = [...(log[id] ?? []), attempt];
+  const keep = new Set([...all.filter(isTimed).slice(-WINDOW), ...all.filter((a) => !isTimed(a)).slice(-WINDOW)]);
+  return { ...log, [id]: all.filter((a) => keep.has(a)) };
 }
+
+/** True when a letter has enough timed answers for the speed part of its score. */
+export const hasSpeedData = (attempts: readonly Attempt[]) => attempts.filter(isTimed).length >= MIN_ATTEMPTS;
 
 const accuracy = (attempts: readonly Attempt[]) => attempts.filter((a) => a.isCorrect).length / attempts.length;
 
@@ -43,13 +54,13 @@ export function speedPoints(ms: number): number {
 /**
  * Letter score 0-100: 80% speed + 20% accuracy.
  * Speed counts only timed answers, and a wrong answer scores 0 speed however fast it was.
- * With no timed answers (spelling only) the score is accuracy alone.
+ * Until there are MIN_ATTEMPTS timed answers the score is accuracy alone, so one slow answer can't swing it.
  */
 export function letterScore(attempts: readonly Attempt[]): number | null {
   if (attempts.length < MIN_ATTEMPTS) return null;
   const accuracyPoints = accuracy(attempts) * 100;
-  const timed = attempts.filter((a) => a.ms !== undefined);
-  if (timed.length === 0) return Math.round(accuracyPoints);
+  if (!hasSpeedData(attempts)) return Math.round(accuracyPoints);
+  const timed = attempts.filter(isTimed);
   const speed = timed.reduce((sum, a) => sum + (a.isCorrect ? speedPoints(a.ms ?? SLOW_MS) : 0), 0) / timed.length;
   return Math.round(SPEED_WEIGHT * speed + (1 - SPEED_WEIGHT) * accuracyPoints);
 }
