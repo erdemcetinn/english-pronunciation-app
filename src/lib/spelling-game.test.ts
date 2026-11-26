@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { buildLetterBank, checkSpelling, isSpellable } from './spelling-game.ts';
+import { buildLetterBank, checkSpelling, isSpellable, toAsciiCapitals } from './spelling-game.ts';
 
 const LIMITS = { minLength: 3, maxLength: 7 };
 
@@ -14,9 +14,14 @@ test('isSpellable: plain lowercase words within the length limits', () => {
 });
 
 test('checkSpelling: marks each slot, missing letters count as wrong', () => {
-  assert.deepEqual(checkSpelling('house', 'house'), { isCorrect: true, slots: [true, true, true, true, true] });
-  assert.deepEqual(checkSpelling('hoyse', 'house'), { isCorrect: false, slots: [true, true, false, true, true] });
-  assert.deepEqual(checkSpelling('ho', 'house'), { isCorrect: false, slots: [true, true, false, false, false] });
+  const house = ['H', 'O', 'U', 'S', 'E'];
+  assert.deepEqual(checkSpelling([...house], house), { isCorrect: true, slots: [true, true, true, true, true] });
+  assert.deepEqual(checkSpelling(['H', 'O', 'Y', 'S', 'E'], house), { isCorrect: false, slots: [true, true, false, true, true] });
+  assert.deepEqual(checkSpelling(['H', 'O'], house), { isCorrect: false, slots: [true, true, false, false, false] });
+});
+
+test('toAsciiCapitals: plain A-Z, never the Turkish dotted İ', () => {
+  assert.deepEqual(toAsciiCapitals('earlier'), ['E', 'A', 'R', 'L', 'I', 'E', 'R']);
 });
 
 const keepOrder = <T>(items: readonly T[]) => [...items];

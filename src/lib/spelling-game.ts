@@ -16,9 +16,18 @@ export interface SpellingResult {
   slots: boolean[];
 }
 
-export function checkSpelling(typed: string, word: string): SpellingResult {
-  const slots = [...word].map((letter, index) => typed[index] === letter);
-  return { isCorrect: typed === word, slots };
+/** Compares picked capital letters with the word's capital letters, slot by slot. */
+export function checkSpelling(picked: readonly string[], letters: readonly string[]): SpellingResult {
+  const slots = letters.map((letter, index) => picked[index] === letter);
+  return { isCorrect: picked.length === letters.length && slots.every(Boolean), slots };
+}
+
+/**
+ * a-z -> A-Z without locale rules. On a Turkish phone toUpperCase/toLowerCase may turn
+ * i into İ or I into ı, which breaks matching and letter lookups.
+ */
+export function toAsciiCapitals(word: string): string[] {
+  return [...word].map((c) => (c >= 'a' && c <= 'z' ? String.fromCharCode(c.charCodeAt(0) - 32) : c));
 }
 
 const ALPHABET = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'];
@@ -47,7 +56,7 @@ interface BankOptions {
  * confusable letters first, then random others.
  */
 export function buildLetterBank(word: string, { decoyCount, shuffle }: BankOptions): LetterTile[] {
-  const letters = [...new Set(word.toUpperCase())];
+  const letters = [...new Set(toAsciiCapitals(word))];
   const inWord = new Set(letters);
   const notInWord = (l: string) => !inWord.has(l);
   const confusable = [...new Set(letters.flatMap((l) => CONFUSABLE[l] ?? []))].filter(notInWord);

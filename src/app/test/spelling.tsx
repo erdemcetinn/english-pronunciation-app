@@ -16,7 +16,14 @@ import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { pickFresh } from '@/lib/pick-fresh';
 import { playLetter, playWord, preloadClips, prefetchWords } from '@/lib/play-word';
 import { shuffled, type SeenMap } from '@/lib/practice-session';
-import { buildLetterBank, checkSpelling, isSpellable, type LetterTile, type SpellingResult } from '@/lib/spelling-game';
+import {
+  buildLetterBank,
+  checkSpelling,
+  isSpellable,
+  toAsciiCapitals,
+  type LetterTile,
+  type SpellingResult,
+} from '@/lib/spelling-game';
 import { VOICES, type VoiceMode } from '@/lib/voice-settings';
 
 const SEEN_LIST_ID = 'game-spelling';
@@ -45,7 +52,7 @@ function newRound(seen: SeenMap): SpellingRound {
   const voiceId = VOICES[Math.floor(Math.random() * VOICES.length)].id;
   return {
     word,
-    letters: [...word.toUpperCase()],
+    letters: toAsciiCapitals(word),
     bank: shuffled(buildLetterBank(word, { decoyCount: DECOY_COUNT, shuffle: shuffled })),
     voiceId,
     voice: { kind: 'voice', voiceId },
@@ -56,7 +63,7 @@ export default function SpellingScreen() {
   const colors = useTheme();
   const { seen, markSeen } = useSeenWords(SEEN_LIST_ID);
   const [round, setRound] = useState<SpellingRound | null>(null);
-  const [typed, setTyped] = useState('');
+  const [picked, setPicked] = useState<readonly string[]>([]);
   const [result, setResult] = useState<SpellingResult | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
   /** The word whose letter clips are on the phone; letters only play after that. */
@@ -93,28 +100,28 @@ export default function SpellingScreen() {
   // Deleting a letter replays the letter for that slot.
   const isReady = round !== null && readyWord === round.word;
   useEffect(() => {
-    if (!isReady || result || typed.length >= letters.length) return;
-    playOne(letters[typed.length]);
-  }, [isReady, result, typed.length, letters, playOne]);
+    if (!isReady || result || picked.length >= letters.length) return;
+    playOne(letters[picked.length]);
+  }, [isReady, result, picked.length, letters, playOne]);
 
   if (!round) return <View style={[styles.fill, { backgroundColor: colors.background }]} />;
 
-  const isComplete = typed.length === round.word.length;
+  const isComplete = picked.length === round.letters.length;
 
   const pickTile = (tile: LetterTile) => {
     if (result || isComplete) return;
-    setTyped(typed + tile.letter.toLowerCase());
+    setPicked([...picked, tile.letter]);
   };
 
   const deleteLast = () => {
-    if (result || typed.length === 0) return;
+    if (result || picked.length === 0) return;
     sequence.stop();
-    setTyped(typed.slice(0, -1));
+    setPicked(picked.slice(0, -1));
   };
 
   const check = () => {
     if (!isComplete || result) return;
-    const checked = checkSpelling(typed, round.word);
+    const checked = checkSpelling(picked, round.letters);
     sequence.stop();
     setResult(checked);
     setScore(scoreAnswer(score, checked.isCorrect));
@@ -124,13 +131,13 @@ export default function SpellingScreen() {
   /** Replays the letter you're on; once every slot is filled, spells the whole word. */
   const replay = () => {
     if (isComplete) start(letters);
-    else playOne(letters[typed.length]);
+    else playOne(letters[picked.length]);
   };
 
   const goNext = () => {
     sequence.stop();
     setRound(newRound(seen ?? {}));
-    setTyped('');
+    setPicked([]);
     setResult(null);
   };
 
@@ -152,8 +159,8 @@ export default function SpellingScreen() {
 
       <SpellingSlots
         length={round.word.length}
-        typed={typed}
-        activeIndex={result ? null : (sequence.playingIndex ?? typed.length)}
+        picked={picked}
+        activeIndex={result ? null : (sequence.playingIndex ?? picked.length)}
         results={result?.slots ?? null}
         onDeleteLast={deleteLast}
       />

@@ -73,7 +73,9 @@ export function playWord(word: string, mode: VoiceMode = getVoiceMode()): Promis
  * The device fallback gets the lowercase letter: iOS reads a lone capital as "capital A".
  */
 export function playLetter(letter: string, mode: VoiceMode = getVoiceMode()): Promise<void> {
-  return playClip(getLetter(letter).key, letter.toLowerCase(), mode);
+  // key is letter-a ... letter-z, so its last character is the plain lowercase letter (no locale rules).
+  const { key } = getLetter(letter);
+  return playClip(key, key.slice(-1), mode);
 }
 
 /** Downloads upcoming words in the background so they play instantly. */

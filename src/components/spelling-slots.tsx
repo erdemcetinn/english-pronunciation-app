@@ -6,7 +6,8 @@ import { useTheme } from '@/hooks/use-theme';
 
 interface SpellingSlotsProps {
   length: number;
-  typed: string;
+  /** Capital letters picked so far. */
+  picked: readonly string[];
   /** Index of the slot being filled now (highlighted). */
   activeIndex: number | null;
   /** After checking: true/false per slot; null while answering. */
@@ -16,7 +17,7 @@ interface SpellingSlotsProps {
 }
 
 /** One underlined box per letter of the word. */
-export function SpellingSlots({ length, typed, activeIndex, results, onDeleteLast }: SpellingSlotsProps) {
+export function SpellingSlots({ length, picked, activeIndex, results, onDeleteLast }: SpellingSlotsProps) {
   const colors = useTheme();
 
   const lineColor = (index: number) => {
@@ -29,7 +30,7 @@ export function SpellingSlots({ length, typed, activeIndex, results, onDeleteLas
       <View style={styles.row}>
         {Array.from({ length }, (_, index) => (
           <View key={index} style={[styles.slot, { borderBottomColor: lineColor(index) }]}>
-            <Text style={[styles.letter, { color: colors.text }]}>{typed[index]?.toUpperCase() ?? ''}</Text>
+            <Text style={[styles.letter, { color: colors.text }]}>{picked[index] ?? ''}</Text>
           </View>
         ))}
       </View>
