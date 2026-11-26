@@ -167,7 +167,7 @@ export default function FindTheVowelScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  container: { padding: Spacing.lg, gap: Spacing.lg },
+  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, gap: Spacing.lg },
   toggleRow: { flexDirection: 'row', justifyContent: 'flex-end' },
   wordBox: { alignItems: 'center', gap: Spacing.sm },
   word: { fontSize: 36, fontWeight: '700' },

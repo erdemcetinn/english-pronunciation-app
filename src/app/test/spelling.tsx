@@ -130,7 +130,7 @@ export default function SpellingScreen() {
 
 const styles = StyleSheet.create({
   fill: { flex: 1 },
-  container: { padding: Spacing.lg, gap: Spacing.lg },
+  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, gap: Spacing.lg },
   question: { textAlign: 'center', fontSize: 16 },
   replay: { textAlign: 'center', fontSize: 16, fontWeight: '600' },
   answer: { alignItems: 'center', gap: Spacing.xs },

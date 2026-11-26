@@ -111,7 +111,7 @@ export default function WordPairsScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1 },
-  container: { padding: Spacing.lg, gap: Spacing.lg },
+  container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, gap: Spacing.lg },
   contrast: { textAlign: 'center', fontSize: 16 },
   question: { textAlign: 'center', fontSize: 18, fontWeight: '600' },
   options: { flexDirection: 'row', gap: Spacing.md },
