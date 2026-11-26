@@ -57,7 +57,9 @@ export default function SpellingScreen() {
   }, [seen, round]);
 
   const { start } = sequence;
-  // Download every letter first, then spell: otherwise slow downloads bunch letters together.
+  /** The word whose letter clips are on the phone; letters only play after that. */
+  const [readyWord, setReadyWord] = useState<string | null>(null);
+
   useEffect(() => {
     if (!round) return;
     let isActive = true;
@@ -67,12 +69,20 @@ export default function SpellingScreen() {
       letters.map((l) => getLetter(l).key),
       round.voiceId,
     ).then(() => {
-      if (isActive) start(letters);
+      if (isActive) setReadyWord(round.word);
     });
     return () => {
       isActive = false;
     };
-  }, [round, letters, start, markSeen]);
+  }, [round, letters, markSeen]);
+
+  // One letter at a time: the next letter plays only after you type the current one.
+  // Deleting a letter replays the letter for that slot.
+  const isReady = round !== null && readyWord === round.word;
+  useEffect(() => {
+    if (!isReady || result || typed.length >= letters.length) return;
+    playOne(letters[typed.length]);
+  }, [isReady, result, typed.length, letters, playOne]);
 
   if (!round) return <View style={[styles.fill, { backgroundColor: colors.background }]} />;
 
@@ -85,6 +95,12 @@ export default function SpellingScreen() {
     setResult(checked);
     setScore(scoreAnswer(score, checked.isCorrect));
     void playWord(round.word, round.voice);
+  };
+
+  /** Replays the letter you're on; once every slot is filled, spells the whole word. */
+  const replay = () => {
+    if (isComplete) start(letters);
+    else playOne(letters[typed.length]);
   };
 
   const goNext = () => {
@@ -103,7 +119,7 @@ export default function SpellingScreen() {
       contentContainerStyle={styles.container}>
       <ScoreHeader score={score} />
       <Text style={[styles.question, { color: colors.textSecondary }]}>
-        Listen to the letters and type the word. {round.word.length} letters.
+        Type each letter you hear; the next one plays after you type. {round.word.length} letters.
       </Text>
 
       <SpellingSlots
@@ -111,15 +127,17 @@ export default function SpellingScreen() {
         typed={typed}
         onChangeText={(text) => setTyped(normalizeTyped(text, round.word.length))}
         onSubmit={check}
-        activeIndex={sequence.playingIndex}
+        activeIndex={result ? null : (sequence.playingIndex ?? typed.length)}
         results={result?.slots ?? null}
       />
 
       <Pressable
-        onPress={() => start(letters)}
-        accessibilityLabel="Spell the word again"
+        onPress={replay}
+        accessibilityLabel={isComplete ? 'Spell the whole word' : 'Play this letter again'}
         style={({ pressed }) => [styles.secondary, { backgroundColor: pressed ? colors.tilePressed : colors.tile }]}>
-        <Text style={[styles.secondaryText, { color: colors.accent }]}>▶︎ Spell again</Text>
+        <Text style={[styles.secondaryText, { color: colors.accent }]}>
+          {isComplete ? '▶︎ Spell whole word' : '▶︎ Letter again'}
+        </Text>
       </Pressable>
 
       {result && (
