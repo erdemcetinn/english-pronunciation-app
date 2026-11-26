@@ -17,6 +17,8 @@ interface LetterOptionProps {
   isPlaying?: boolean;
   /** Smaller tile for big letter grids. */
   isCompact?: boolean;
+  /** Dimmed and not tappable (e.g. a letter tile already used). */
+  isDisabled?: boolean;
   style?: ViewStyle;
 }
 
@@ -29,6 +31,7 @@ export function LetterOption({
   accessibilityLabel,
   isPlaying = false,
   isCompact = false,
+  isDisabled = false,
   style,
 }: LetterOptionProps) {
   const colors = useTheme();
@@ -44,10 +47,12 @@ export function LetterOption({
   return (
     <Pressable
       onPress={onPress}
+      disabled={isDisabled}
       accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [
         styles.option,
         isCompact && styles.compact,
+        isDisabled && styles.disabled,
         { backgroundColor: backgroundColor(pressed), borderColor: isPlaying ? colors.accent : borderColor },
         style,
       ]}>
@@ -69,6 +74,7 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
   },
   compact: { minHeight: 64 },
+  disabled: { opacity: 0.25 },
   title: { fontSize: 40, fontWeight: '700' },
   compactTitle: { fontSize: 28 },
   subtitle: { fontSize: 20 },

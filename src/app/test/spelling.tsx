@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { IpaText } from '@/components/ipa-text';
+import { LetterOption } from '@/components/letter-option';
 import { ScoreHeader } from '@/components/score-header';
 import { SpellingSlots } from '@/components/spelling-slots';
 import { SUCCESS_COLOR } from '@/constants/game';
@@ -14,19 +15,26 @@ import { useTheme } from '@/hooks/use-theme';
 import { INITIAL_SCORE, scoreAnswer } from '@/lib/listening-game';
 import { pickFresh } from '@/lib/pick-fresh';
 import { playLetter, playWord, preloadClips, prefetchWords } from '@/lib/play-word';
-import type { SeenMap } from '@/lib/practice-session';
-import { checkSpelling, isSpellable, normalizeTyped, type SpellingResult } from '@/lib/spelling-game';
+import { shuffled, type SeenMap } from '@/lib/practice-session';
+import { buildLetterBank, checkSpelling, isSpellable, type LetterTile, type SpellingResult } from '@/lib/spelling-game';
 import { VOICES, type VoiceMode } from '@/lib/voice-settings';
 
 const SEEN_LIST_ID = 'game-spelling';
 const WORD_LIMITS = { minLength: 3, maxLength: 7 };
+/** Extra letters in the bank, so the word can't be solved as an anagram without listening. */
+const DECOY_COUNT = 3;
 const SPELL_STEP_MS = 900;
 /** Extra bottom space: keeps the content centered but a little above the middle. */
 const LIFT = 96;
+const TILE_WIDTH = '18%';
 const SPELLABLE_WORDS = ALL_WORDS.filter((word) => isSpellable(word, WORD_LIMITS));
 
 interface SpellingRound {
   word: string;
+  /** Capital letters of the word, in order. */
+  letters: string[];
+  /** Tiles to pick from, in screen order. */
+  bank: LetterTile[];
   /** One speaker spells the whole word, like a real person would. */
   voiceId: string;
   voice: VoiceMode;
@@ -35,30 +43,39 @@ interface SpellingRound {
 function newRound(seen: SeenMap): SpellingRound {
   const word = pickFresh(SPELLABLE_WORDS, seen, Math.random) ?? SPELLABLE_WORDS[0];
   const voiceId = VOICES[Math.floor(Math.random() * VOICES.length)].id;
-  return { word, voiceId, voice: { kind: 'voice', voiceId } };
+  return {
+    word,
+    letters: [...word.toUpperCase()],
+    bank: shuffled(buildLetterBank(word, { decoyCount: DECOY_COUNT, shuffle: shuffled })),
+    voiceId,
+    voice: { kind: 'voice', voiceId },
+  };
 }
 
 export default function SpellingScreen() {
   const colors = useTheme();
   const { seen, markSeen } = useSeenWords(SEEN_LIST_ID);
   const [round, setRound] = useState<SpellingRound | null>(null);
-  const [typed, setTyped] = useState('');
+  const [usedIds, setUsedIds] = useState<readonly number[]>([]);
   const [result, setResult] = useState<SpellingResult | null>(null);
   const [score, setScore] = useState(INITIAL_SCORE);
+  /** The word whose letter clips are on the phone; letters only play after that. */
+  const [readyWord, setReadyWord] = useState<string | null>(null);
 
   const voice = round?.voice;
   const playOne = useCallback((letter: string) => voice && void playLetter(letter, voice), [voice]);
   const sequence = usePlaySequence(playOne, SPELL_STEP_MS);
-  const letters = useMemo(() => [...(round?.word ?? '')].map((l) => l.toUpperCase()), [round]);
+  const { start } = sequence;
+  const letters = useMemo(() => round?.letters ?? [], [round]);
+  const typed = useMemo(
+    () => usedIds.map((id) => round?.bank.find((t) => t.id === id)?.letter ?? '').join('').toLowerCase(),
+    [usedIds, round],
+  );
 
   // Start once the seen history has loaded, so the first words are fresh too.
   useEffect(() => {
     if (seen && !round) setRound(newRound(seen));
   }, [seen, round]);
-
-  const { start } = sequence;
-  /** The word whose letter clips are on the phone; letters only play after that. */
-  const [readyWord, setReadyWord] = useState<string | null>(null);
 
   useEffect(() => {
     if (!round) return;
@@ -66,7 +83,7 @@ export default function SpellingScreen() {
     markSeen(round.word);
     prefetchWords([round.word], round.voice);
     void preloadClips(
-      letters.map((l) => getLetter(l).key),
+      round.letters.map((l) => getLetter(l).key),
       round.voiceId,
     ).then(() => {
       if (isActive) setReadyWord(round.word);
@@ -74,9 +91,9 @@ export default function SpellingScreen() {
     return () => {
       isActive = false;
     };
-  }, [round, letters, markSeen]);
+  }, [round, markSeen]);
 
-  // One letter at a time: the next letter plays only after you type the current one.
+  // One letter at a time: the next letter plays only after you pick the current one.
   // Deleting a letter replays the letter for that slot.
   const isReady = round !== null && readyWord === round.word;
   useEffect(() => {
@@ -87,6 +104,17 @@ export default function SpellingScreen() {
   if (!round) return <View style={[styles.fill, { backgroundColor: colors.background }]} />;
 
   const isComplete = typed.length === round.word.length;
+
+  const pickTile = (tile: LetterTile) => {
+    if (result || isComplete || usedIds.includes(tile.id)) return;
+    setUsedIds([...usedIds, tile.id]);
+  };
+
+  const deleteLast = () => {
+    if (result || usedIds.length === 0) return;
+    sequence.stop();
+    setUsedIds(usedIds.slice(0, -1));
+  };
 
   const check = () => {
     if (!isComplete || result) return;
@@ -106,39 +134,66 @@ export default function SpellingScreen() {
   const goNext = () => {
     sequence.stop();
     setRound(newRound(seen ?? {}));
-    setTyped('');
+    setUsedIds([]);
     setResult(null);
   };
+
+  const tileStyle = ({ pressed }: { pressed: boolean }) => [
+    styles.secondary,
+    { backgroundColor: pressed ? colors.tilePressed : colors.tile },
+  ];
+  const rowTileStyle = (state: { pressed: boolean }) => [...tileStyle(state), styles.rowItem];
 
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
-      automaticallyAdjustKeyboardInsets
-      keyboardShouldPersistTaps="handled"
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.container}>
       <ScoreHeader score={score} />
       <Text style={[styles.question, { color: colors.textSecondary }]}>
-        Type each letter you hear; the next one plays after you type. {round.word.length} letters.
+        Tap the letter you hear; the next one plays after you pick. {round.word.length} letters.
       </Text>
 
       <SpellingSlots
         length={round.word.length}
         typed={typed}
-        onChangeText={(text) => setTyped(normalizeTyped(text, round.word.length))}
-        onSubmit={check}
         activeIndex={result ? null : (sequence.playingIndex ?? typed.length)}
         results={result?.slots ?? null}
+        onDeleteLast={deleteLast}
       />
 
-      <Pressable
-        onPress={replay}
-        accessibilityLabel={isComplete ? 'Spell the whole word' : 'Play this letter again'}
-        style={({ pressed }) => [styles.secondary, { backgroundColor: pressed ? colors.tilePressed : colors.tile }]}>
-        <Text style={[styles.secondaryText, { color: colors.accent }]}>
-          {isComplete ? '▶︎ Spell whole word' : '▶︎ Letter again'}
-        </Text>
-      </Pressable>
+      {!result && (
+        <View style={styles.bank}>
+          {round.bank.map((tile) => (
+            <LetterOption
+              key={tile.id}
+              title={tile.letter}
+              state="idle"
+              isCompact
+              isDisabled={usedIds.includes(tile.id) || isComplete}
+              onPress={() => pickTile(tile)}
+              accessibilityLabel={`Letter ${tile.letter}`}
+              style={styles.tile}
+            />
+          ))}
+        </View>
+      )}
+
+      {!result && (
+        <View style={styles.row}>
+          <Pressable onPress={deleteLast} accessibilityLabel="Delete the last letter" style={rowTileStyle}>
+            <Text style={[styles.secondaryText, { color: colors.textSecondary }]}>⌫ Delete</Text>
+          </Pressable>
+          <Pressable
+            onPress={replay}
+            accessibilityLabel={isComplete ? 'Spell the whole word' : 'Play this letter again'}
+            style={rowTileStyle}>
+            <Text style={[styles.secondaryText, { color: colors.accent }]}>
+              {isComplete ? '▶︎ Whole word' : '▶︎ Letter again'}
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       {result && (
         <Pressable onPress={() => void playWord(round.word, round.voice)} style={styles.answer}>
@@ -161,10 +216,7 @@ export default function SpellingScreen() {
       </Pressable>
 
       {!result && (
-        <Pressable
-          onPress={goNext}
-          accessibilityLabel="Skip to the next word"
-          style={({ pressed }) => [styles.secondary, { backgroundColor: pressed ? colors.tilePressed : colors.tile }]}>
+        <Pressable onPress={goNext} accessibilityLabel="Skip to the next word" style={tileStyle}>
           <Text style={[styles.secondaryText, { color: colors.textSecondary }]}>Skip word ⏭</Text>
         </Pressable>
       )}
@@ -176,6 +228,10 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   container: { flexGrow: 1, justifyContent: 'center', padding: Spacing.lg, paddingBottom: Spacing.lg + LIFT, gap: Spacing.lg },
   question: { textAlign: 'center', fontSize: 16 },
+  bank: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: Spacing.sm },
+  tile: { flex: 0, width: TILE_WIDTH },
+  row: { flexDirection: 'row', gap: Spacing.sm },
+  rowItem: { flex: 1 },
   secondary: { paddingVertical: Spacing.md, borderRadius: Radius.lg, alignItems: 'center' },
   secondaryText: { fontSize: 18, fontWeight: '600' },
   answer: { alignItems: 'center', gap: Spacing.xs },
