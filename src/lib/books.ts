@@ -71,7 +71,8 @@ async function fetchCatalogUncached(): Promise<BookEntry[]> {
     const text = await response.text();
     const parsed: unknown = JSON.parse(text);
     if (!Array.isArray(parsed)) throw new Error('Book list is not an array');
-    cached.write(text);
+    // Saved for offline use; a failed save must not hide the list.
+    await Promise.resolve(cached.write(text)).catch((error) => console.warn('Could not save the book list', error));
     return parsed.filter(isBookEntry);
   } catch (error) {
     if (!cached.exists) throw error;
