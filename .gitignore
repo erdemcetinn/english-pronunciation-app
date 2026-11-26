@@ -56,3 +56,6 @@ infra/.terraform/
 infra/*.tfstate*
 infra/*.tfvars
 .env
+
+# Imported books (copyrighted, stored in S3 only)
+data/books/

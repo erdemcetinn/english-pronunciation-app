@@ -35,6 +35,7 @@
     "@aws-sdk/client-polly": "^3.1176.0",
     "@aws-sdk/client-s3": "^3.1176.0",
     "@types/react": "~19.3.0",
+    "pdfjs-dist": "6.5.438",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -46,7 +47,9 @@
     "verify:phonemes": "node scripts/verify-phonemes.mjs",
     "build:words": "node scripts/build-practice-words.mjs",
     "test": "node --test scripts/lib/ src/lib/*.test.ts",
-    "generate:audio": "node scripts/generate-audio.mjs"
+    "generate:audio": "node scripts/generate-audio.mjs",
+    "import:book": "node scripts/import-book.mjs",
+    "upload:books": "node scripts/upload-books.mjs"
   },
   "private": true
 }
